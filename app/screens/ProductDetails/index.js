@@ -220,7 +220,7 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
   }
   //console.warn(wishItemNames);
   const shareProduct = async () => {
-    const url = `https://macaunutrition.com/macaunutrition/productdetails/${singleproduct.pid}`;
+    const url = `https://macaunutrition.com/productdetails/${singleproduct.pid}`;
     const options = {
      message: `Macau Nutrition: ${singleproduct.name}\nCheck out the product here: ${url}`,
     };

@@ -64,7 +64,7 @@ const LoginStack = () => (
 );
 
 const linking = {
-  prefixes: ['https://macaunutrition.com/macaunutrition'],
+  prefixes: ['https://macaunutrition.com', 'macaunutrition://'],
   config: {
     screens: {
       Home: {

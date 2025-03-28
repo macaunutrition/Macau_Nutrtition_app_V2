@@ -1,115 +1,184 @@
-import React from 'react';
-import {View, Text, StyleSheet, FlatList, Pressable} from 'react-native';
+import React, {useRef, useEffect, useState} from 'react';
+import {View, Text, StyleSheet, FlatList, TouchableOpacity,SafeAreaView,Pressable} from 'react-native';
+import LottieView from 'lottie-react-native';
 import {scale} from 'react-native-size-matters';
 import Container from '../../components/Container';
+import Feather from 'react-native-vector-icons/Feather';
 import Label from '../../components/Label';
 import ScreenHeader from '../../components/ScreenHeader';
 import {appColors, shadow} from '../../utils/appColors';
 import {orderList} from '../../utils/MockData';
+import getOrders from '../../utils/getOrders';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from "react-i18next";
+import "../../translation";
+import { firebase } from '@react-native-firebase/analytics';
 
 export default function index({navigation}) {
+  const { t, i18n } = useTranslation();
+  const [user, setUser] = useState('');
+  const [ isLoading, setIsLoading ] = useState( true );
+  const [orderlist, setOrderlist] = useState([]);
+  const  LoadOrders = async () => {
+    const orderArr: any[] = [];
+    const mobile = await AsyncStorage.getItem('user');
+    setUser(mobile);
+    const getorders = await getOrders('orders', mobile);
+    getorders.forEach(doc => {
+     orderArr.push({
+         id: doc.id,
+         ...doc.data()
+       });
+   });
+   setOrderlist(orderArr);
+    setIsLoading(false);
+  };
+  const addanalytics = async () => {
+    await firebase.analytics().setCurrentScreen('Orders');
+  }
+  useEffect(() => {
+    addanalytics();
+    LoadOrders();
+  }, [orderlist]);
+
   const OrderCard = ({item}) => {
-    const {label, amount, status, color} = item;
+    const {amount, currency, status, createat, id, mpaytransactionno, mpaytransactionid} = item;
+    const datetime = new Date(createat).toLocaleDateString();
+    const time = new Date(createat).toLocaleTimeString();
     return (
-      <View style={styles.contentContiner}>
-        <View>
+      <TouchableOpacity onPress={() => navigation.navigate('OrdersDetails',{orderid:item.transationid})} >
+        <View style={styles.contentContiner}>
+          <View>
           <Label
-            text={label}
-            style={{fontSize: scale(18), fontWeight: '500'}}
-          />
-          <Label
-            text={amount}
+            text={currency + amount}
             style={{
-              fontWeight: '500',
+              fontWeight: 'bold',
               color: appColors.primary,
-              paddingVertical: scale(10),
+              paddingVertical: scale(0),
+              fontSize: scale(18),
+              //alignSelf: 'center',
             }}
           />
-          <Pressable
+          <Label
+            text={t('status')+': '+status}
             style={{
-              borderRadius: scale(3),
-              width: '80%',
-              paddingVertical: scale(10),
-              backgroundColor: appColors?.[color],
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Label
-              text={status}
-              style={{fontSize: scale(14), color: appColors.white}}
-            />
-          </Pressable>
-        </View>
-        <View>
-          <FlatList
-           
-            nestedScrollEnabled
-            ItemSeparatorComponent={() => <View style={{padding: scale(2)}} />}
-            data={[1, 2, 3, 4]}
-            numColumns={2}
-            keyExtractor={(item) => `${item}_${new Date().getTime()}_${item}`}
-            renderItem={({item}) => (
-              <View
-                key={item}
-                style={{
-                  backgroundColor: appColors.lightGreen,
-                  height: scale(35),
-                  width: scale(35),
-                  marginLeft: scale(4),
-                  borderRadius: scale(3),
-                }}
-              />
-            )}
+              fontWeight: 'bold',
+              paddingVertical: scale(0),
+              fontSize: scale(11),
+              //alignSelf: 'center',
+              marginBottom: 5,
+            }}
           />
+          <Label
+            text={'# '+id}
+            style={{fontSize: scale(16), fontWeight: '500',   marginBottom: 5}}
+          />
+            {/*<Label
+              text={t('id')+': '+id}
+              style={{fontSize: scale(16), fontWeight: '500',   marginBottom: 15}}
+            />
+            <Label
+              text={t('transaction')+': '+mpaytransactionno}
+              style={{fontSize: scale(14), fontWeight: '500',   marginBottom: 15,}}
+            />
+            <Label
+              text={t('reference')+': '+mpaytransactionid}
+              style={{fontSize: scale(14), fontWeight: '500', marginBottom: 15}}
+            />*/}
+            <Label
+              text={datetime+' '+time}
+              style={{fontSize: scale(12), fontWeight: '500',  paddingVertical: scale(0),color: appColors.primary}}
+            />
+          </View>
+
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
   return (
-    <Container  >
-      <ScreenHeader navigation={navigation} label="Track Order" />
-      <View style={{paddingVertical: scale(20)}}>
-        <Label
-          text="Sept 23, 2021"
-          style={{opacity: scale(0.5), fontSize: scale(13)}}
-        />
-      </View>
-      <OrderCard
-        item={{
-          label: 'AMU - 9249296 - N',
-          amount: '$3503',
-          status: 'In transit',
-          color: 'yellow',
-        }}
-      />
-      <View style={{flex:1, paddingVertical:scale(20)}}>
-      <View style={{paddingVertical: scale(20)}}>
-        <Label
-          text="Sept 23, 2021"
-          style={{opacity: scale(0.5), fontSize: scale(13)}}
-        />
-      </View>
+    <>
+      {isLoading ? (
+        <>
+        <SafeAreaView>
+        <View
+          style={{
+            flexDirection: 'row',
+            //justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingVertical: scale(15),
+            paddingHorizontal: scale(10),
+            backgroundColor: '#76b729',
+            marginBottom: scale(5),
+          }}>
+            <Pressable onPress={() => navigation.goBack()}>
+              <Feather name="chevron-left" color={appColors.white} size={scale(25)} />
+            </Pressable>
+            <Label
+              text={t('orderhistory')}
+              style={{fontWeight: '500', color: 'white',fontSize: scale(18)}}
+            />
+        </View>
+        </SafeAreaView>
+          <Container>
+          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <LottieView
+              source={require('../../static/bikelotti.json')}
+              autoPlay
+              loop={true}
+              style={{width: 150, height: 150}}
+            />
+          </View>
+            </Container>
+        </>
+      ) : (
+        <>
+        <SafeAreaView>
+        <View
+          style={{
+            flexDirection: 'row',
+            //justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingVertical: scale(15),
+            paddingHorizontal: scale(10),
+            backgroundColor: '#76b729',
+            marginBottom: scale(5),
+          }}>
+            <Pressable onPress={() => navigation.goBack()}>
+              <Feather name="chevron-left" color={appColors.white} size={scale(25)} />
+            </Pressable>
+            <Label
+              text={t('orderhistory')}
+              style={{fontWeight: '500', color: 'white',fontSize: scale(18)}}
+            />
+        </View>
+        </SafeAreaView>
+          <Container  >
+            <View style={{flex:1, paddingVertical:scale(20)}}>
+              <FlatList
 
-      <FlatList
-      
-      keyExtractor={(item)=> `${item.label}_${new Date().getTime()}_${item.amount}`}
-        ItemSeparatorComponent={() => <View style={{padding: scale(5)}} />}
-        data={orderList}
-        renderItem={({item, index}) => <OrderCard key={index} item={item} />}
-      />
-      </View>
-    </Container>
+                keyExtractor={(item) => item.id}
+                ItemSeparatorComponent={() => <View style={{padding: scale(5)}} />}
+                data={orderlist}
+                keyboardShouldPersistTaps={'handled'}
+                renderItem={({item, index}) => <OrderCard key={index} item={item} />}
+              />
+            </View>
+          </Container>
+        </>
+      )}
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   contentContiner: {
-    paddingVertical: scale(30),
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingVertical: scale(10),
+    // flexDirection: 'column',
+    // justifyContent: 'space-between',
+    // alignItems: 'center',
     backgroundColor: appColors.white,
-    paddingHorizontal: scale(20),
+    paddingHorizontal: scale(10),
+    width: '100%',
     ...shadow,
   },
 });

@@ -7,8 +7,30 @@ import {scale} from 'react-native-size-matters';
 import {appColors} from '../../utils/appColors';
 import Label from '../../components/Label';
 import CustomButton from '../../components/CustomButton';
-export default function index({navigation}) {
+import {addToCart} from '../../redux/cartAction';
+import ReduxWrapper from '../../utils/ReduxWrapper';
+import { APP_CURRENY } from '../../utils/appConfig';
+import { useTranslation } from "react-i18next";
+import "../../translation";
+
+export default function index({route:{params}, navigation}) {
+  const { t, i18n } = useTranslation();
+  const cartItems = params.cartItems;
+  const getAmount = ()=>{
+    let amount =0
+    cartItems?.map(item=>{
+      const {price, vprice, quantity} =item;
+      if(item.variationname) {
+        amount+= Number( vprice )*Number(quantity);
+      }else {
+        amount+= Number( price )*Number(quantity);
+      }
+    })
+    return  `${APP_CURRENY.symbol} ${amount}`
+
+  }
   return (
+    <>
     <KeyboardAvoidingView style={{flex:1}}>
       <Container
         isScrollable
@@ -21,14 +43,22 @@ export default function index({navigation}) {
           style={{paddingHorizontal: scale(20), paddingVertical: scale(20)}}>
           <FlatList
           showsVerticalScrollIndicator={false}
-            data={bestSellersList}
+            data={cartItems}
             ItemSeparatorComponent={() => <View style={{padding: scale(10)}} />}
             renderItem={({item, index}) => (
               <CheckOutItem
                 noBg
+                itemid={item.id}
                 name={item.name}
                 image={item.image}
                 price={item.price}
+                quantity={item.quantity}
+                variation={item.variation}
+                variationname={item.variationname}
+                optionid={item.optionid}
+                optionname={item.optionname}
+                wieght={item.wieght}
+                getpoint={item.getpoint}
               />
             )}
           />
@@ -48,7 +78,7 @@ export default function index({navigation}) {
               alignItems: 'center',
             }}>
             <Label
-              text="Sub Total"
+              text={t('subtotal')}
               style={{fontWeight: '400', fontSize: scale(18)}}
             />
             <View
@@ -56,53 +86,16 @@ export default function index({navigation}) {
                 borderRadius: scale(1),
                 borderWidth: scale(0.5),
                 borderStyle: 'dashed',
-                width: '60%',
+                width: '50%',
               }}
             />
-            <Label text="$4500" style={{fontWeight: '800'}} />
+            <Label text={getAmount()} style={{fontWeight: '800'}} />
           </View>
 
-          <View
-            style={{
-              paddingVertical: scale(20),
-              paddingHorizontal: scale(20),
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Label
-              text="Tax"
-              style={{fontWeight: '400', fontSize: scale(18)}}
-            />
-            <View
-              style={{
-                borderRadius: scale(1),
-                borderWidth: scale(0.5),
-                borderStyle: 'dashed',
-                width: '60%',
-              }}
-            />
-            <Label text="$40" style={{fontWeight: '800'}} />
-          </View>
+
         </View>
 
-        <View style={{flex:1, paddingHorizontal: scale(20)}}>
-          <View
-            style={{
-              borderRadius: scale(5),
-              marginTop: scale(20),
-              borderColor: appColors.lightGray,
-              borderWidth: scale(1),
-              paddingHorizontal: scale(20),
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              height: scale(50),
-            }}>
-            <TextInput  placeholder="Enter Voucher Code" style={{flex:1, fontSize:scale(16)}} />
-            <Label text="APPLY" />
-          </View>
-        </View>
+
 
         <View
           style={{
@@ -111,9 +104,10 @@ export default function index({navigation}) {
             paddingHorizontal: scale(20),
             paddingVertical: scale(30),
           }}>
-          <CustomButton label="CHECKOUT" onPress={()=> navigation.navigate("CheckOutSteper")} />
+          <CustomButton label={t('checkout')} onPress={()=> navigation.navigate("CheckOutSteper", {cartItems})} />
         </View>
       </Container>
     </KeyboardAvoidingView>
+    </>
   );
 }

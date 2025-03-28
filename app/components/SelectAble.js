@@ -6,7 +6,7 @@ import Label from './Label'
 import TitleComp from './TitleComp'
 
 export default function SelectAble({selected,onSelect,item}) {
-    const {label,subLabel}=item
+    const {label,subLabel,name,email,phone}=item
     return (
         <View style={{flex: 1,paddingVertical:scale(20)}}>
         <TitleComp heading={label} />
@@ -17,7 +17,18 @@ export default function SelectAble({selected,onSelect,item}) {
             alignItems: 'center',
           }}>
           <View style={{flex: 1, paddingVertical:scale(10)}}>
-            <Label text={subLabel}  style={{fontSize:scale(13)}} />
+            {name && ( <View style={{flex: 1,paddingTop:scale(10)}}>
+              <Label text={name}  style={{fontSize:scale(13)}} />
+            </View> )}
+            {email && ( <View style={{flex: 1,paddingTop:scale(10)}}>
+              <Label text={email}  style={{fontSize:scale(13)}} />
+            </View> )}
+            {phone && ( <View style={{flex: 1, paddingVertical:scale(10)}}>
+              <Label text={phone}  style={{fontSize:scale(13)}} />
+            </View> )}
+            <View>
+              <Label text={subLabel}  style={{fontSize:scale(13)}} />
+            </View>
           </View>
           <View style={{flex: 1, alignItems: 'flex-end'}}>
             <CheckBox onPress={()=>onSelect && onSelect(item)}  isChecked={selected}  />

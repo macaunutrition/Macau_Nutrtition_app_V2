@@ -35,7 +35,7 @@ export default function CustomInput({
       <TextInput
         placeholder={placeholder}
         value={value}
-         
+
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
@@ -45,7 +45,7 @@ export default function CustomInput({
       />
       {IconRight && <IconRight />}
       </View>
-    
+
     </View>
   );
 }
@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
     paddingVertical: scale(10),
     // flex: 1,
     fontSize: scale(14),
+    width: '100%'
   },
   blurBorder: {
     borderColor: appColors.darkGray,

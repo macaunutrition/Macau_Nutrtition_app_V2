@@ -1,5 +1,16 @@
 {
-  "name": "Amusoftech",
-  "displayName": "Amusoftech",
-  "navigationTypeTabs": true
+  "name": "macaunutrition",
+  "displayName": "Macau Nutrition",
+  "navigationTypeTabs": true,
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "677677c3-4fcc-41f7-a56f-926a85242ba6"
+      }
+    },
+    "owner": "himanshubhuyan0",
+    "ios": {
+      "bundleIdentifier": "com.macauntrition.shopapp"
+    }
+  }
 }

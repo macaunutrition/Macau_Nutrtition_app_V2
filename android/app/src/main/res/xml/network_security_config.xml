@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.122.82</domain>
+        <domain includeSubdomains="true">24.199.118.232</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">macaupay.com</domain>
+        <domain includeSubdomains="true">uatopenapi.macaupay.com.mo</domain>
+        <domain includeSubdomains="true">openapi.macaupay.com.mo</domain>
+        <domain includeSubdomains="true">14.29.69.182:4080</domain>
+        <domain includeSubdomains="true">202.86.151.170</domain>
+        <domain includeSubdomains="true">182.93.49.146</domain>
+        <domain includeSubdomains="true">182.93.49.146:443</domain>
+    </domain-config>
+</network-security-config>

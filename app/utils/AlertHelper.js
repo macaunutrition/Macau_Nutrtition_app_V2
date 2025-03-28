@@ -11,7 +11,11 @@ export class AlertHelper {
         this.dropDown.alertWithType(type, title, message);
       }
     }
-  
+    static showWithActions(type, title, message, actions) {
+      if (this.dropDown && this.dropDown.alertWithActions) {
+        this.dropDown.alertWithActions(type, title, message, actions);
+      }
+    }
     static setOnClose(onClose) {
       this.onClose = onClose;
     }

@@ -1,8 +1,11 @@
 module.exports = {
-    project: {
-      ios: {},
-      android: {},
+  dependencies: {
+    'MpayModule': {
+      platforms: {
+        ios: {
+          podspecPath: '/Users/mrinal/Desktop/Macau-Nutrition/ios/macaunutrition/MpayModule.podspec', // Correct path to the podspec file of your custom module
+        },
+      },
     },
-    assets: [],
-    dependencies: {}, // make sure this dependencies are all valid installed packages or empty if you don't need it
-  };
+  },
+};

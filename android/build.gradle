@@ -2,10 +2,10 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "29.0.2"
-        minSdkVersion = 21
-        compileSdkVersion = 29
-        targetSdkVersion = 29
+        buildToolsVersion = "33.0.0"
+        minSdkVersion = 23
+        compileSdkVersion = 34
+        targetSdkVersion = 34
         googlePlayServicesAuthVersion = "19.2.0" // <--- use this version or newer
 
     }
@@ -15,16 +15,23 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:3.5.4")
+      classpath('com.android.tools.build:gradle:7.4.2')
+      classpath('com.facebook.react:react-native-gradle-plugin')
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-        classpath 'com.google.gms:google-services:4.3.10'
-        
+        classpath 'com.google.gms:google-services:4.3.14'
+
 
     }
 }
 
 allprojects {
+  configurations.all {
+        resolutionStrategy {
+            // Remove this override in 0.65+, as a proper fix is included in react-native itself.
+            force "com.facebook.react:react-native:+"
+        }
+    }
     repositories {
         mavenLocal()
         maven {
@@ -40,5 +47,8 @@ allprojects {
         jcenter()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
+        flatDir {
+            dirs "$rootDir/app/libs"
+        }
     }
 }

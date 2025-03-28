@@ -1,11 +1,12 @@
 export const appColors={
-    primary:'#00C569',
+    primary:'#76b729',
+    primaryDark:'#509301',
     secondary:"#fff",
     white:"#ffffff",
     black:"#000",
     yellow:"#FFC107",
     redOrange:"#FF3D00",
-    red:"#E80057",
+    red:"#CC0033",
     darkGray:"#929292",
     lightGray:'#DDDDDD',
     gray:"#BEBEBE",
@@ -19,7 +20,12 @@ export const shadow = {
     },
     //shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 2,
+    elevation: 1,
+}
+export const borderwith = {
+  borderWidth:1,
+  borderColor:'#76b729',
+  borderStyle:'solid',
 }
 
 /*

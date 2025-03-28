@@ -1,24 +1,38 @@
-import { ADD_TO_CART,REMOVE_FROM_CART } from "../cartAction"; //action
+import { ADD_TO_CART,REMOVE_FROM_CART,CLEAR_CART,UPDATE_CART_ITEM } from "../cartAction"; //action
 
 const intiialState = {
-    cartItems :[] // multiple
+    cartItems : [] // multiple
 }
 
 
 export default function (state =intiialState,action) {
 const {type, payload} =action
     switch (type) {
-        case ADD_TO_CART: 
-       return  {
-            ...state,
-            cartItems : [...state.cartItems, payload]
-        }
+        case ADD_TO_CART:
+         return  {
+              ...state,
+              cartItems : [...state.cartItems, payload]
+          }
+        case CLEAR_CART:
+           return {
+             ...state,
+             cartItems: []
+           };
+        case UPDATE_CART_ITEM:
+            return {
+              ...state,
+              cartItems: state.cartItems.map(item =>
+                  item.id === payload.itemId
+                    ? { ...item, quantity:  payload.quantity }
+                    : item
+              )
+            };
     case REMOVE_FROM_CART:
         const itemsLeft = state.cartItems?.filter((item,index)=>{
-              if(item?.name !=  payload)
+              if(item?.id !=  payload)
               return item
         })
-        console.log({itemsLeft});
+        //console.log({itemsLeft});
         return {
             ...state,
             cartItems : [...itemsLeft]
@@ -26,5 +40,6 @@ const {type, payload} =action
         default:
             return state
     }
-    
-} 
+
+
+}

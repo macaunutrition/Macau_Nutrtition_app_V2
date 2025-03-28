@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {View, Text, Pressable} from 'react-native';
+import React, {useState, useRef, useEffect} from 'react';
+import {View, Text, Pressable, SafeAreaView, SectionList, TextInput,Image, TouchableOpacity,StyleSheet, Linking} from 'react-native';
 import {scale} from 'react-native-size-matters';
 import Container from '../../components/Container';
 import CustomInput from '../../components/CustomInput';
@@ -9,62 +9,150 @@ import {appColors, shadow} from '../../utils/appColors';
 import auth from '@react-native-firebase/auth';
 import {AlertHelper} from '../../utils/AlertHelper';
 import {CommonActions} from '@react-navigation/native';
-  
-import googleLogin from '../../services/googleLogin';
+import Feather from 'react-native-vector-icons/Feather';
+import RBSheet from 'react-native-raw-bottom-sheet';
+import color from 'color';
+
+
 import writeData from '../../utils/writeData';
+import getData from '../../utils/getData';
 import ReduxWrapper from '../../utils/ReduxWrapper';
 
+import PhoneInput from "react-native-phone-number-input";
+import { useTranslation } from "react-i18next";
+import "../../translation";
+import { firebase } from '@react-native-firebase/analytics';
+
+
 function index({getProductsList$,loginUser$, navigation}) {
+  const refRBSheet = useRef();
+  const { t, i18n } = useTranslation();
   const [credentials, setCredentials] = useState({});
   const [isloading, setisloading] = useState(false)
 
-  const onGoogleLogin  =async ()=>{
-   const {user,additionalUserInfo} =await googleLogin()
-  const {email,displayName,uid,photoURL} =user
-   if(additionalUserInfo?.isNewUser){
-    const {providerId,profile} =additionalUserInfo
-     //create new user and login
-    await writeData('users',{email , name: displayName  , uid ,photoURL,providerId,profile} )
-   } 
-   getProductsList$()
-   loginUser$({email , name: displayName  , uid ,photoURL} );
-  }
-  const onLogin = async () => {
-    //auth().signOut()
-    const {email, password} = credentials;
+  const [user, setUser] = useState(null);
 
-    try {
-        if(email && password){
-          setisloading(true)
-          const {user,additionalUserInfo} = await auth().signInWithEmailAndPassword(
-          email?.toLowerCase(),
-          password?.toLowerCase(),
-        );
-        console.log(user);
-        if (user?.uid) {
-          if(additionalUserInfo?.isNewUser){
-            const {providerId,profile} =additionalUserInfo
-          //create new user and login
-          await writeData('users',{email :user?.email, name: user?.displayName  , uid:user?.uid  ,photoURL : user?.photoURL  ,providerId,profile} )
-          }
-          loginUser$({email:user?.email, name: user?.displayName ? user?.displayName : "User", uid: user?.uid } );
-          getProductsList$()
-          AlertHelper.show('success', 'Welcome to Amusoftech');
-          navigation.navigate('Home');
-        }
-      }else{
-        setisloading(false)
-        AlertHelper.show('error', 'Email and password is required!!');
+  const [mobile, setMobile] = useState(null);
+
+  const [confirm, setConfirm] = useState(null);
+
+  const [code, setCode] = useState('');
+
+  const phoneInput = useRef(null);
+
+  const changelanguage = (lang) => {
+     i18n.changeLanguage(lang);
+     refRBSheet.current.close()
+  }
+  const closesheet = () => {
+    refRBSheet.current.close();
+  }
+  const signInWithMobileNumber = async () => {
+    if(mobile) {
+      setisloading(true);
+
+      try {
+        const confirmation = await auth().signInWithPhoneNumber(mobile);
+        setConfirm(confirmation);
+      } catch (e) {
+        AlertHelper.show('error', e.message);
+        console.log(e);
       }
-      
-    } catch (error) {
-      AlertHelper.show('error', 'Something went woring');
+      setisloading(false);
+    }else {
+      AlertHelper.show('error', t('mobilenumberisrequired'));
     }
   };
 
-  const onChangeText = (name, text) => {
-    setCredentials({...credentials, [name]: text});
+  const confirmCode = async () => {
+    setisloading(true);
+    try {
+      await confirm.confirm(code);
+      setisloading(false);
+      const getU = await getData('users',mobile );
+      if(getU.data()) {
+        if(getU.data()['country']) {
+          if(getU.data()['rewardpoints']) {
+            AlertHelper.show('success', t('youhave')+' '+getU.data()['rewardpoints']+' '+ t('rewardpoints'));
+          }
+          navigation.navigate('Home');
+        }else {
+          if(getU.data()['rewardpoints']) {
+            AlertHelper.show('success', t('youhave')+' '+getU.data()['rewardpoints']+' '+ t('rewardpoints'));
+          }
+          navigation.navigate('SignUp');
+        }
+      }else {
+        const getnewr = await getData('settings','rewardsettings');
+        const newreward = getnewr.data()['newuser'];
+        await writeData('users', mobile, {mobile : mobile, rewardpoints: newreward} );
+        AlertHelper.show('success', t('yougot')+' '+newreward+' '+t('rewardpoints'));
+        navigation.navigate('SignUp');
+      }
+
+
+    } catch (error) {
+      setisloading(false);
+      AlertHelper.show('error', t('invalidcode'));
+    }
   };
+  const gototerms = async () => {
+    navigation.navigate('Termsncondition');
+    //navigation.navigate('SignUp');
+  };
+  const gotoprivacy = async () => {
+    navigation.navigate('Privacy');
+  }
+
+  // const onLogin = async () => {
+  //   //auth().signOut()
+  //   const {mobile} = credentials;
+  //
+  //   try {
+  //       if(mobile){
+  //         setisloading(true)
+  //         const {user,additionalUserInfo} = await auth().signInWithEmailAndPassword(
+  //         email?.toLowerCase(),
+  //         password?.toLowerCase(),
+  //       );
+  //       console.log(user);
+  //       if (user?.uid) {
+  //         if(additionalUserInfo?.isNewUser){
+  //           const {providerId,profile} =additionalUserInfo
+  //         //create new user and login
+  //         await writeData('users',{email :user?.email, name: user?.displayName  , uid:user?.uid  ,photoURL : user?.photoURL  ,providerId,profile} )
+  //         }
+  //         loginUser$({email:user?.email, name: user?.displayName ? user?.displayName : "User", uid: user?.uid } );
+  //         getProductsList$()
+  //         AlertHelper.show('success', 'Welcome to Macau Nutrition');
+  //         navigation.navigate('Home');
+  //       }
+  //     }else{
+  //       setisloading(false)
+  //       AlertHelper.show('error', 'Email and password is required!!');
+  //     }
+  //
+  //   } catch (error) {
+  //     AlertHelper.show('error', 'Something went woring');
+  //   }
+  // };
+
+  const onChangeText = (name, text) => {
+    if(text) {
+      setMobile(text)
+    }else {
+      setisloading(false);
+      setConfirm('');
+    }
+
+    //setCredentials({...credentials, [name]: text});
+  };
+  const addanalytics = async () => {
+    await firebase.analytics().setCurrentScreen('Login');
+  }
+  useEffect(() => {
+    addanalytics();
+  }, []);
 
   return (
     <Container isScrollable>
@@ -76,94 +164,129 @@ function index({getProductsList$,loginUser$, navigation}) {
           padding: scale(15),
           borderRadius: scale(5),
         }}>
+        <Image
+        resizeMode='contain'
+        style={{width:'100%',height:scale(100)}}
+        source={require('../../static/images/logo.jpg')} />
+
+        <Text style={{width: '100%',textAlign:"center",fontSize:20,marginTop:0}}>{t('signprob')}</Text>
+        <Text style={{width: '100%',justifyContent: 'space-between',display:'block',fontSize:14,marginTop:15,marginBottom:30}}>
+          {t('entaccountyou')}
+        </Text>
+        <View style={{paddingVertical: scale(10)}}>
+             {!confirm ? (
+               <>
+               <PhoneInput
+                ref={phoneInput}
+                defaultValue={mobile}
+                defaultCode="MO"
+                placeholder={t('mobilenumber')}
+                containerStyle={{borderRadius:6}}
+                textContainerStyle={{paddingVertical:5, backgroundColor:appColors.lightGray,borderTopRightRadius:6,borderBottomRightRadius:6}}
+                onChangeFormattedText={(text) => {
+                   onChangeText('mobile', text)
+                }}
+                withDarkTheme
+                withShadow
+                autoFocus
+              />
+                 <CustomButton isLoading={isloading}  onPress={signInWithMobileNumber} label={t('continue')} />
+                 <Text styles={{paddingTop:100}}>
+                    {t('termtxt1')} <Text style={{color: appColors.primary}} onPress={gototerms}>{t('termsandconditions')}</Text> {t('and')} <Text onPress={gotoprivacy} style={{color: appColors.primary}}>{t('privacypolicy')}</Text>
+                 </Text>
+               </>
+             ) : (
+               <>
+               <CustomInput
+                 value={code}
+                 onChangeText={e => setCode(e)}
+                 placeholder={t('code')}
+                 keyboardType="numeric"
+                 label=""
+               />
+                <CustomButton isLoading={isloading}  onPress={confirmCode} label={t('confirmcode')} />
+               </>
+             )}
+       </View>
+       </View>
+       <View style={{
+         marginTop: scale(50),
+         padding: scale(15),
+         borderRadius: scale(5),
+         alignItems:'center'
+       }}>
+          <Text style={{fontSize:16,fontWeight:'bold'}}>{t('problem')}</Text>
+          <Feather style={{color:appColors.primary,marginTop:30}} name={"headphones"} size={scale(30)} onPress={ ()=>{ Linking.openURL('https://macaunutrition.com/macaunutritiona.html')}} />
+       </View>
+       <View style={styles.langcontainer}>
+        {/* Other content */}
+        <View style={styles.bottomView}>
+          <Text style={{color:appColors.primary,fontSize:15,marginBottom:10}} onPress={() => refRBSheet.current.open()}>語言 Language</Text>
+          <Text style={{fontSize:scale(11)}}>Version 1.2.5</Text>
+        </View>
+      </View>
+       <RBSheet
+        ref={refRBSheet}
+        openDuration={250}
+        closeOnDragDown={true}
+        closeOnPressMask={true}
+         height={200}
+        customStyles={{
+          wrapper: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+          draggableIcon: {
+            backgroundColor: '#fff',
+          },
+          container: {
+            borderTopRightRadius:scale(20),
+            borderTopLeftRadius: scale(20),
+          }
+        }}
+        customModalProps={{
+          animationType: 'fade',
+          statusBarTranslucent: true,
+        }}
+        customAvoidingViewProps={{
+          enabled: false,
+        }}>
         <View
           style={{
             flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
+            //justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingVertical: scale(15),
+            paddingHorizontal: scale(10),
+            //backgroundColor: '#76b729',
+            marginBottom: scale(5),
+            borderBottomColor:color(appColors.black).alpha(0.2).rgb().string(),
+            borderBottomWidth:scale(1),
           }}>
-          <Label
-            text="Welcome,"
-            style={{fontSize: scale(30), fontWeight: '700'}}
-          />
-          <Pressable onPress={() => navigation.navigate('SignUp')}>
-            <Label
-              text="Sign Up"
-              style={{
-                fontSize: scale(14),
-                fontWeight: '500',
-                color: appColors.primary,
-              }}
-            />
+          <Pressable onPress={() => refRBSheet.current.close()}>
+            <Feather name="x" color={appColors.primary} size={scale(25)} />
           </Pressable>
-        </View>
-        <View style={{paddingVertical: scale(15)}}>
+
           <Label
-            text="Sign in to Continue"
-            style={{
-              fontSize: scale(16),
-              //fontWeight: '500',
-              color: appColors.darkGray,
-            }}
+            text={t('selectlanguage')}
+            style={{fontWeight: '500', fontSize: scale(18),color:appColors.primary,marginLeft:scale(20)}}
           />
         </View>
-        <View style={{paddingVertical: scale(10)}}>
-          <CustomInput
-            onChangeText={(text) => onChangeText('email', text)}
-            keyboardType="email-address"
-            label="Email"
-            placeholder="john@doe.com"
-          />
-        </View>
-        <View style={{paddingVertical: scale(10)}}>
-          <CustomInput
-            onChangeText={(text) => onChangeText('password', text)}
-            secureTextEntry
-            label="Password"
-            placeholder="Password"
-            // value="*******"
-          />
-        </View>
-        <Pressable
-          onPress={() => navigation.navigate('Verification')}
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            paddingVertical: scale(10),
-          }}>
-          <Label
-            text="Forgot password"
-            style={{
-              fontSize: scale(14),
-              // fontWeight: '500',
-            }}
-          />
-        </Pressable>
-        <CustomButton isLoading={isloading}  onPress={onLogin} label="Sign in" />
-      </View>
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingVertical: scale(20),
-        }}>
-        <Label
-          text="-OR-"
-          style={{
-            fontSize: scale(18),
-            //fontWeight: '500',
-          }}
-        />
-      </View>
-      <CustomButton
-        onPress={onGoogleLogin}
-        icon="google"
-        label="Sign in"
-        unFilled
-      />
-      <CustomButton    onPress={onLogin} icon="twitter" label="Sign in" unFilled />
+        <Text onPress={() => changelanguage('cn')} style={{fontSize:scale(15),paddingVertical:scale(15),paddingHorizontal:scale(10),borderBottomColor:color(appColors.black).alpha(0.2).rgb().string(),borderBottomWidth:scale(1),}}>中文</Text>
+        <Text onPress={() => changelanguage('en')}  style={{fontSize:scale(15),paddingVertical:scale(15),paddingHorizontal:scale(10)}}>English</Text>
+      </RBSheet>
     </Container>
   );
-}
 
+}
+const styles = StyleSheet.create({
+  langcontainer: {
+    flex: 1,
+    justifyContent: 'flex-end', // Moves the view to the bottom
+    alignItems:'center',
+  },
+  bottomView: {
+    paddingTop: 50,
+    alignItems:'center',
+  },
+});
 export default ReduxWrapper(index);

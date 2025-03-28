@@ -9,11 +9,11 @@ export default function index() {
     return (
         <>
         <Container isScrollable>
-            <ScreenHeader label="Shipping Address"  /> 
-            <SelectAble  item={{label:'Amusoftech Home',subLabel:"A-127, Mittal Paradise, Shivalik City, Sahibzada Ajit Singh Nagar, Punjab 140301"}}  />
+            <ScreenHeader label="Shipping Address"  />
+            <SelectAble  item={{label:'Home',subLabel:"A-127, Mittal Paradise, Shivalik City, Sahibzada Ajit Singh Nagar, Punjab 140301"}}  />
             <SelectAble  item={{label:'Work Address',subLabel:"A-127, Mittal Paradise, Shivalik City, Sahibzada Ajit Singh Nagar, Punjab 140301"}}  />
 
-            
+
         </Container>
         <View style={{paddingHorizontal:scale(20), justifyContent:'flex-end',flex:0.5,alignItems:'flex-end'}}>
         <CustomButton  label="New" />

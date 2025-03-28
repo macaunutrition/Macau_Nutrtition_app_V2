@@ -3,8 +3,11 @@ export const ANDROID_FULL_PAGE_AD_ID=  "ca-app-pub-6766214386933283/6078294395"
 
 
 export const APP_CURRENY={
-    symbol:"$"
+    symbol:"MOP",
+    currency:"MOP"
 }
+export const APP_IMGURL="http://24.199.118.232:8000/upload";
+export const APIURL = "http://24.199.118.232:8000/api/"
 /*
 
 App Open	ca-app-pub-3940256099942544/5662855259

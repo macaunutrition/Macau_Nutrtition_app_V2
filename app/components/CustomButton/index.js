@@ -33,7 +33,7 @@ export default function index({
           labelStyle,
         ]}>
         {`${label}`.toUpperCase()}
-      </Text> : 
+      </Text> :
       <ActivityIndicator size={"large"} color={appColors.white} />
 
       }

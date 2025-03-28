@@ -1,4 +1,4 @@
-import {ADD_TO_WISH_LIST, REMOVE_TO_WISH_LIST} from '../wishListAction'; //action
+import {ADD_TO_WISH_LIST, REMOVE_TO_WISH_LIST,CLEAR_WISH_LIST, IS_IN_WISH_LIST} from '../wishListAction'; //action
 
 const intiialState = {
   wishItems: [], // multiple
@@ -12,14 +12,20 @@ export default function (state = intiialState, action) {
       return {
         ...state,
         wishItems: [...state.wishItems, payload],
-        wishItemNames:[...state.wishItemNames,payload?.name ]
+        wishItemNames:[...state.wishItemNames,payload?.pid ]
       };
+    case CLEAR_WISH_LIST:
+       return {
+         ...state,
+         wishItems: [],
+         wishItemNames:[]
+       };
     case REMOVE_TO_WISH_LIST:
       const itemsLeft = state.wishItems?.filter((item, index) => {
-        if (item?.name != payload) return item;
+        if (item?.pid != payload?.pid) return item;
       });
       const tmpwishItemNames=state?.wishItemNames ?.filter((item, index) => {
-        if (item != payload) return item;
+        if (item != payload?.pid) return item;
       });
       return {
         ...state,

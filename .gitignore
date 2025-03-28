@@ -62,8 +62,3 @@ buck-out/
 .expo
 dist/
 web-build/
-#bigfile
-android/java_pid21888.hprof
-android/java_pid23953.hprof
-android/java_pid26092.hprof
-android/java_pid26922.hprof

@@ -136,7 +136,7 @@ const truncateText = (text,limit) => {
                 style={{
                   fontSize: scale(18),
                   fontWeight: '500',
-                  color: appColors.primary,
+                  color: appColors.primaryDark,
                 }}/>
               </>
             )}

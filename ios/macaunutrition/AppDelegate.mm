@@ -34,16 +34,24 @@
 }
 
 
-// Linking API
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-  [[OpenSDK sharedInstance] ProcessOrderWithPaymentResult:url];
-  return [super application:application openURL:url options:options] || [RCTLinkingManager application:application openURL:url options:options];
+
+- (BOOL)application:(UIApplication *)application
+              openURL:(NSURL *)url
+              options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    [[OpenSDK sharedInstance] ProcessOrderWithPaymentResult:url];
+    if ([RCTLinkingManager application:application openURL:url options:options]) {
+        return YES; // Return YES if the URL was handled by React Native Linking
+    }
+    return YES;
 }
 
 // Universal Links
-- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
-  BOOL result = [RCTLinkingManager application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
-  return [super application:application continueUserActivity:userActivity restorationHandler:restorationHandler] || result;
+- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity
+ restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
+{
+ return [RCTLinkingManager application:application
+                  continueUserActivity:userActivity
+                    restorationHandler:restorationHandler];
 }
 
 // Explicitly define remote notification delegates to ensure compatibility with some third-party libraries
@@ -64,9 +72,5 @@
   return [super application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    [[OpenSDK sharedInstance] ProcessOrderWithPaymentResult:url];
-    return YES;
-}
 
 @end

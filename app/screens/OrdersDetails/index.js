@@ -123,15 +123,14 @@ export default function index({navigation,route:{params}}) {
     };
 
     try {
+      setIsPdfLoading(false);
       const pdf = await RNHTMLtoPDF.convert(options);
       await FileViewer.open(pdf.filePath);
       //AlertHelper.show('success', t('pdfgenerated'));
       //Alert.alert('PDF Generated', `File saved at: ${pdf.filePath}`);
     } catch (error) {
-      console.warn(error);
-      AlertHelper.show('error', t('pdferror'));
-    } finally {
       setIsPdfLoading(false);
+      AlertHelper.show('error', t('pdferror'));
     }
   };
   const addanalytics = async () => {

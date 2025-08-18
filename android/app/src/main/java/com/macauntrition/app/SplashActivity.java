@@ -1,4 +1,4 @@
-package com.macauntrition.shopapp; // make sure this is your package name
+package com.macauntrition.app; // make sure this is your package name
 
 import android.content.Intent;
 import android.os.Bundle;

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Spinner, Image, Pressable, SafeAreaView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Spinner, Image, Pressable, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
 import LottieView from 'lottie-react-native';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import { scale } from 'react-native-size-matters';
@@ -13,14 +13,18 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from "react-i18next";
 import "../../translation";
 import { appColors, shadow, borderwith } from '../../utils/appColors';
+import FastImage from 'react-native-fast-image';
+import getAllCategories from '../../utils/getAllCategories';
+import { APP_IMGURL } from '../../utils/appConfig';
+import firebase from '@react-native-firebase/app';
 
 const { width } = Dimensions.get("window");
 const columnWidth = (width - 10) / 2 - 10;
 import MasonryFlatlist from 'react-native-masonry-grid';
 import { useSelector } from 'react-redux';
 import getAllData from '../../utils/getAllData';
-import { APP_IMGURL } from '../../utils/appConfig';
-import getAllCategories from '../../utils/getAllCategories';
+
+const ITEMS_PER_PAGE = 20;
 
 export default function index({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -30,40 +34,69 @@ export default function index({ navigation }) {
   const [ispageLoading, setIspageLoading] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState({});
   const [allImagesLoaded, setAllImagesLoaded] = useState(false);
-  
-  const getcatData = async () => {
-    setIspageLoading(true);
-    const getcat = await getAllCategories('categories', 'parent');
-    const cat: any[] = [];
-    getcat.forEach(doc => {
-      cat.push({
+  const [loading, setLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreItems, setHasMoreItems] = useState(true);
+  const [lastDoc, setLastDoc] = useState(null);
+
+  const getCategoryData = async (loadMore = false) => {
+    if (!loadMore) {
+      setIspageLoading(true);
+      setLastDoc(null);
+    } else {
+      setIsLoadingMore(true);
+    }
+
+    try {
+      let query = firebase.firestore()
+        .collection('categories')
+        .where('parent', '==', null)
+        .where('status', '==', 'enable')
+        .orderBy('name', 'asc');
+
+      if (!loadMore) {
+        query = query.limit(ITEMS_PER_PAGE);
+      } 
+      else if (lastDoc) {
+        query = query.startAfter(lastDoc).limit(ITEMS_PER_PAGE);
+      }
+
+      const snapshot = await query.get();
+      console.log('Fetched items:', snapshot.docs.length);
+      
+      if (snapshot.empty) {
+        setHasMoreItems(false);
+        return;
+      }
+
+      const cats = snapshot.docs.map(doc => ({
         id: doc.id,
         image: APP_IMGURL + '/categories/' + doc.id + '/' + doc.data()['iconname'],
         ...doc.data()
-      });
-    });
-    setCategorylist(cat);
-    setIspageLoading(false);
-  }
-  
-  useEffect(() => {
-    getcatData()
-  }, []);
-  
-  useEffect(() => {
-    // Check if all images are loaded
-    if (categorylist.length > 0 && Object.keys(imagesLoaded).length > 0) {
-      const allLoaded = categorylist.every(item => imagesLoaded[item.id]);
-      setAllImagesLoaded(allLoaded);
-    }
-  }, [imagesLoaded, categorylist]);
+      }));
 
-  const handleImageLoad = (id) => {
-    setImagesLoaded(prev => ({
-      ...prev,
-      [id]: true
-    }));
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMoreItems(snapshot.docs.length >= ITEMS_PER_PAGE);
+
+      if (loadMore) {
+        setCategorylist(prev => [...prev, ...cats]);
+      } else {
+        setCategorylist(cats);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setHasMoreItems(false);
+    } finally {
+      setIspageLoading(false);
+      setIsLoadingMore(false);
+    }
   };
+
+  useEffect(() => {
+    getCategoryData();
+  }, []);
+
+
 
   const _renderHeader = () => {
     return (
@@ -109,9 +142,9 @@ export default function index({ navigation }) {
           marginBottom: scale(15)
         }}>
           <SkeletonPlaceholder borderRadius={scale(40)}>
-            <SkeletonPlaceholder.Item 
-              width={scale(70)} 
-              height={scale(70)} 
+            <SkeletonPlaceholder.Item
+              width={scale(70)}
+              height={scale(70)}
             />
           </SkeletonPlaceholder>
         </View>
@@ -122,101 +155,80 @@ export default function index({ navigation }) {
     );
   };
 
+  const loadMore = () => {
+    if (!isLoadingMore && hasMoreItems && lastDoc) {
+      getCategoryData(true);
+    }
+  };
+
+  const refreshData = () => {
+    setLastDoc(null);
+    setHasMoreItems(true);
+    setCategorylist([]);
+    getCategoryData();
+  };
+
+  const renderItem = ({ item }) => {
+    const { id, name, cname, image } = item;
+    return (
+      <View style={{ alignItems: 'center', marginRight: scale(10), width: "22.6%" }}>
+        <TouchableRipple
+          onPress={() => navigation.navigate('Category', { item })}
+          rippleColor={appColors.primary}
+          rippleContainerBorderRadius={scale(40)}
+          rippleDuration={800}
+          style={{
+            ...borderwith,
+            height: scale(70),
+            width: scale(70),
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: scale(40),
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
+          <FastImage
+            resizeMode={FastImage.resizeMode.contain}
+            style={{ height: scale(70), width: scale(70), borderRadius: scale(40) }}
+            source={{ uri: image }}
+          />
+        </TouchableRipple>
+        <View style={{ marginTop: scale(15) }}>
+          <Label 
+            text={i18n.language == 'en' ? name : cname} 
+            style={{ fontSize: scale(14), textAlign: 'center' }} 
+          />
+        </View>
+      </View>
+    );
+  };
+  useEffect(() => {
+    console.log('catlist updated:', categorylist.length, 'items');
+  }, [categorylist]);
+
   return (
     <>
-      {ispageLoading ? (
-        <>
-          {_renderHeader()}
-          <Container>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <LottieView
-                source={require('../../static/bikelotti.json')}
-                autoPlay
-                loop={true}
-                style={{ width: 150, height: 150 }}
-              />
+      {_renderHeader()}
+      <Container>
+        <FlatList
+          style={{ marginTop: scale(15) }}
+          numColumns={4}
+          showsVerticalScrollIndicator={false}
+          data={ispageLoading ? Array(20).fill(0) : categorylist}
+          renderItem={ispageLoading ? renderSkeletonItem : renderItem}
+          keyExtractor={(item, index) => ispageLoading ? `skeleton-${index}` : item.id}
+          ItemSeparatorComponent={() => <View style={{ padding: scale(10) }} />}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => isLoadingMore && (
+            <View style={{ padding: 20 }}>
+              <ActivityIndicator size="large" color={appColors.primary} />
             </View>
-          </Container>
-        </>
-      ) : (
-        <>
-          {_renderHeader()}
-          <Container isScrollable>
-            {!allImagesLoaded && categorylist.length > 0 ? (
-              <FlatList
-                style={{ marginTop: scale(15) }}
-                numColumns='4'
-                showsVerticalScrollIndicator={true}
-                Vertical
-                data={Array(20).fill(0)}
-                ItemSeparatorComponent={() => <View style={{ padding: scale(10) }} />}
-                renderItem={() => renderSkeletonItem()}
-                keyExtractor={(_, index) => `skeleton-${index}`}
-              />
-            ) : (
-              <FlatList
-                style={{ marginTop: scale(15) }}
-                numColumns='4'
-                showsVerticalScrollIndicator={true}
-                Vertical
-                data={categorylist}
-                ItemSeparatorComponent={() => <View style={{ padding: scale(10) }} />}
-                renderItem={({ item, index }) => {
-                  const { id, name, cname, Icon, image } = item;
-                  return (
-                    <View key={index} style={{ alignItems: 'center', marginRight: scale(10), width: "22.6%" }}>
-                      <TouchableRipple
-                        onPress={() => {
-                          navigation.navigate('Category', { item });
-                        }}
-                        rippleColor={appColors.primary}
-                        rippleContainerBorderRadius={scale(40)}
-                        rippleDuration={800}
-                        style={{
-                          ...borderwith,
-                          height: scale(70),
-                          width: scale(70),
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          borderRadius: scale(40),
-                          overflow: 'hidden',
-                          position: 'relative',
-                        }}>
-                        <Image
-                          resizeMode='contain'
-                          style={{ 
-                            height: scale(70), 
-                            width: scale(70), 
-                            borderRadius: scale(40)
-                          }}
-                          source={{ uri: image }}
-                          onLoad={() => handleImageLoad(id)}
-                        />
-                      </TouchableRipple>
-                      <View style={{ marginTop: scale(15) }}>
-                        <Label 
-                          text={i18n.language == 'en' ? name : cname} 
-                          style={{ fontSize: scale(14), textAlign: 'center' }} 
-                        />
-                      </View>
-                    </View>
-                  );
-                }}
-              />
-            )}
-            
-            {/* Hidden images to preload */}
-            {categorylist.map(item => (
-              <Image
-                key={`preload-${item.id}`}
-                source={{ uri: item.image }}
-                style={{ width: 0, height: 0 }}
-                onLoad={() => handleImageLoad(item.id)}
-              />
-            ))}
-          </Container>
-        </>
-      )}
+          )}
+          refreshing={false}
+          onRefresh={refreshData}
+        />
+      </Container>
     </>
   );
 }

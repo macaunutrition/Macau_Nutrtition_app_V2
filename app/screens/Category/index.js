@@ -192,9 +192,12 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
   }
 
   const handleImageLoaded = () => {
+    console.log('Image loaded:', loadingImages + 1, 'of', totalImages); // Add logging
     setLoadingImages(prev => {
       const newCount = prev + 1;
-      if (newCount >= totalImages && totalImages > 0) {
+      // Only set imagesLoaded to true when ALL images have loaded
+      if (newCount === totalImages) {
+        console.log('All images loaded'); // Add logging
         setImagesLoaded(true);
       }
       return newCount;
@@ -239,14 +242,7 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
       <>
       {_renderHeader()}
       <Container>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <LottieView
-          source={require('../../static/bikelotti.json')}
-          autoPlay
-          loop={true}
-          style={{width: 150, height: 150}}
-        />
-      </View>
+            {renderSkeletonGrid()}
       </Container>
       </>
     ) : (
@@ -269,59 +265,65 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
               renderEmptyState()
             ) : (
               <>
-                {!imagesLoaded && renderSkeletonGrid()}
-                <MasonryFlatlist
-                  data={productlist}
-                  numColumns={2}
-                  initialColToRender={10}
-                  columnWrapperStyle={styles.columnWrapperStyle}
-                  showsVerticalScrollIndicator={false}
-                  style={[styles.masonryFlatlist, !imagesLoaded ? {display: 'none'} : {}]}
-                  
-                  renderItem={({ item, index }) => {
-                     if (index % 2 == 0) {
-                       return (
-                         <View style={styles.ProductCardodd}>
-                           <ProductCard 
-                             navigation={navigation} 
-                             key={index} 
-                             item={item} 
-                             cartItems={cartItems}
-                             onImageLoad={handleImageLoaded}
-                           />
-                         </View>
-                       );
-                     } else {
-                       return (
-                         <View style={styles.ProductCardeven}>
-                           <ProductCard 
-                             navigation={navigation} 
-                             key={index} 
-                             item={item} 
-                             cartItems={cartItems}
-                             onImageLoad={handleImageLoaded}
-                           />
-                         </View>
-                       );
-                     }
-                  }}
-                  onEndReached={loadMore}
-                  onEndReachedThreshold={0.7}
-                  scrollEventThrottle={16}
-                  keyExtractor={(item) => item.id}
-                  ListFooterComponent={() => (
-                    isLoadingMore && (
-                      <View style={{ padding: 20, width: '100%' }}>
-                        <ActivityIndicator size="large" color={appColors.primary} />
-                      </View>
-                    )
-                  )}
-                />
+                      <MasonryFlatlist
+                        data={productlist}
+                        numColumns={2}
+                        initialColToRender={10}
+                        columnWrapperStyle={styles.columnWrapperStyle}
+                        showsVerticalScrollIndicator={false}
+                        style={styles.masonryFlatlist}
+
+                        renderItem={({ item, index }) => {
+                          if (index % 2 == 0) {
+                            return (
+                              <View style={styles.ProductCardodd}>
+                                <ProductCard
+                                  navigation={navigation}
+                                  key={index}
+                                  item={item}
+                                  cartItems={cartItems}
+                                  onImageLoad={() => {
+                                    console.log('Image loaded callback for index:', index); // Debug log
+                                    handleImageLoaded();
+                                  }}
+                                />
+                              </View>
+                            );
+                          } else {
+                            return (
+                              <View style={styles.ProductCardeven}>
+                                <ProductCard
+                                  navigation={navigation}
+                                  key={index}
+                                  item={item}
+                                  cartItems={cartItems}
+                                  onImageLoad={() => {
+                                    console.log('Image loaded callback for index:', index); // Debug log
+                                    handleImageLoaded();
+                                  }}
+                                />
+                              </View>
+                            );
+                          }
+                        }}
+                        onEndReached={loadMore}
+                        onEndReachedThreshold={0.7}
+                        scrollEventThrottle={16}
+                        keyExtractor={(item) => item.id}
+                        ListFooterComponent={() => (
+                          isLoadingMore && (
+                            <View style={{ padding: 20, width: '100%' }}>
+                              <ActivityIndicator size="large" color={appColors.primary} />
+                            </View>
+                          )
+                        )}
+                      />
                       {isLoadingMore && (
                         <View style={{ backgroundColor: 'transparent', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                           <ActivityIndicator size="large" color={appColors.primary} />
                         </View>
                       )}
+                 
               </>
             )}
           </View>

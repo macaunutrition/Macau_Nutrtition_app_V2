@@ -1,4 +1,4 @@
-package com.macauntrition.shopapp;
+package com.macauntrition.app;
 import expo.modules.ReactActivityDelegateWrapper;
 import com.facebook.react.ReactActivityDelegate;
 
@@ -8,6 +8,8 @@ import android.os.Bundle;
 import com.zoontek.rnbootsplash.RNBootSplash;
 
 public class MainActivity extends ReactActivity {
+
+  private static final boolean IS_NEW_ARCHITECTURE_ENABLED = false;
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
@@ -24,7 +26,7 @@ public class MainActivity extends ReactActivity {
   }
   @Override
   protected ReactActivityDelegate createReactActivityDelegate() {
-    return new ReactActivityDelegateWrapper(this, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED,
+    return new ReactActivityDelegateWrapper(this, IS_NEW_ARCHITECTURE_ENABLED,
       new ReactActivityDelegate(this, getMainComponentName())
     );
   }

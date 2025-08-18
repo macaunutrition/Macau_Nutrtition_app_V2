@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2.3</string>
+	<string>1.2.9</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -27,9 +27,11 @@
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.macauntrition.shopapp</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.macauntrition.shopapp</string>
+				<string>macaunutrition</string>
 			</array>
 		</dict>
 		<dict>
@@ -40,6 +42,15 @@
 				<string>app-1-519519096933-ios-93f5014c1e5d460429b68c</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.macauntrition.shopapp</string>
+			</array>
+		</dict>
+		<dict/>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
@@ -60,6 +71,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>We need access to your documents folder to save invoice</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>

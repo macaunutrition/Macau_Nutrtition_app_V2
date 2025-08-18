@@ -8,3 +8,10 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+-dontwarn com.mpay.**
+-keep class com.mpay.sdk.** { *; }
+-keepclassmembers class com.mpay.sdk.** { *; }
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keep class com.facebook.react.** { *; }

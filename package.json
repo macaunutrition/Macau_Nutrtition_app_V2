@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "homepage": "https://macaunutrition.com/",
-  "author": "macaunutrition <macaunutrition@gmail.com>",
+  "author": "macaunutrition <himanshubhuyan0@gmail.com>",
   "scripts": {
     "build": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
     "buildios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",

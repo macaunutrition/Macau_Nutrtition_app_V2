@@ -1,5 +1,5 @@
 import React ,{useEffect,useState,useCallback}from 'react';
-import {View, Text,FlatList, TextInput, ActivityIndicator} from 'react-native';
+import {View, Text,FlatList, TextInput, ActivityIndicator, Modal, TouchableWithoutFeedback} from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
@@ -34,7 +34,7 @@ import { useTranslation } from "react-i18next";
 import "../../translation";
 import {updateSalesCount} from '../../utils/getAllProducts';
 import FastImage from 'react-native-fast-image';
-import { firebase } from '@react-native-firebase/analytics';
+import sendPush from '../../utils/sendPush';
 
 function index({route:{params}, navigation}) {
   const { t, i18n } = useTranslation();
@@ -161,7 +161,7 @@ function index({route:{params}, navigation}) {
         coupontype: coupontype,
         poinget: getPoin(),
         poinused: `${parseFloat(pusd).toFixed(2)}`,
-        status:'Payment Processing',
+        status:'Placed',
         createat: Date.now()
       } );
       await updateSalesCount(cartItems);
@@ -170,14 +170,20 @@ function index({route:{params}, navigation}) {
       await axios.post(`${APIURL}sendordermail`, {
         id: transationid
       });
-    firebase.analytics().logEvent('purchase', { transaction_id: transationid });
+      // Push notification to the user's device if token exists
+      if (userInfo?.fcmtoken) {
+        const title = t('orderplacesucc');
+        const body = `Congratulation your order # ${transationid} is Placed`;
+        sendPush(userInfo.fcmtoken, title, body, { orderId: transationid });
+      }
   };
-  const onPaymentDone = (info) => {
+ 
+  const onPaymentDone = async (info) => {
     setIspayloading(false);
     const {error, data, transationid, mpaytid, mpaytno} = info;
     if (!error) {
-       saveOrder(transationid,mpaytid,mpaytno);
-      UpdateQty();
+      await saveOrder(transationid,mpaytid,mpaytno);
+      await UpdateQty();
       dispatch(clearCart());
       AlertHelper.show('success', t('orderplacesucc'));
       navigation.navigate('Orders');
@@ -186,24 +192,31 @@ function index({route:{params}, navigation}) {
     }
   };
   const onPay = async () => {
+    if (ispayloading) return; // Prevent multiple payment attempts
     setIspayloading(true);
-    await paymentHelper(
-      {
-        description: 'Order at Macau Nutrition',
-        currency: APP_CURRENY.currency,
-        amount: parseFloat(parseFloat(dynamicprice)+parseFloat(shippingamount)).toFixed(2),
-        name: 'Macau Nutrition',
-        cartItems: cartItems,
-        user: user,
-        shipping: {
-          name: getn,
-          phone: getp,
-          address: gets,
-          comment: getc,
-        }
-      },
-      onPaymentDone,
-    );
+    
+    try {
+      await paymentHelper(
+        {
+          description: 'Order at Macau Nutrition',
+          currency: APP_CURRENY.currency,
+          amount: parseFloat(parseFloat(dynamicprice)+parseFloat(shippingamount)).toFixed(2),
+          name: 'Macau Nutrition',
+          cartItems: cartItems,
+          user: user,
+          shipping: {
+            name: getn,
+            phone: getp,
+            address: gets,
+            comment: getc,
+          }
+        },
+        onPaymentDone,
+      );
+    } catch (error) {
+      setIspayloading(false);
+      AlertHelper.show('error', t('paymentfailed'));
+    }
   };
   const Loadshiping = async () => {
       setIspageloading(true);
@@ -334,13 +347,11 @@ function index({route:{params}, navigation}) {
       setCouponused('');
     }
   }
-  const addanalytics = async () => {
-    await firebase.analytics().setCurrentScreen('Checkout Final Step');
-  }
+  
 
   useEffect(() => {
     Loadshiping();
-    addanalytics();
+    return () => {};
   }, [params]);
   return (
     <>
@@ -483,10 +494,10 @@ function index({route:{params}, navigation}) {
                   unFilled
                 />
                 { dynamicprice > 0 && (
-                  <CustomButton isLoading={ispayloading} onPress={onPay} label={t('pay')} /> )}
-                { dynamicprice <= 0 && (
-                    <CustomButton isLoading={ispayloading} onPress={onPay} label={t('done')} /> )}
-              </View>
+                   <CustomButton isDisabled={ispayloading} onPress={onPay} label={t('pay')} /> )}
+                 { dynamicprice <= 0 && (
+                    <CustomButton isDisabled={ispayloading} onPress={onPay} label={t('pay')} /> )}
+               </View>
           </Container>
          
         </>

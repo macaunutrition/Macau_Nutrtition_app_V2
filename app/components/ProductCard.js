@@ -15,13 +15,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import {AlertHelper} from '../utils/AlertHelper';
 import moment from 'moment';
 import { firebase } from '@react-native-firebase/analytics';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import FastImage from 'react-native-fast-image';
 const placeholder = require('../static/images/default-placeholder.png');
 
 export default function ProductCard({ cartItems, navigation, item, onImageLoad = () => {} }) {
   const dispatch = useDispatch();
-  const { id, name, averageRating,cname, description, cdescription, variation, price, sellprice, image, isNew, height, createdAt} = item;
+  const { id, name, qty,averageRating,cname, description, cdescription, variation, price, sellprice, image, isNew, height, createdAt} = item;
   const imgSource = image ? { uri: image } : placeholder;
   const today = moment().unix();
   const startDate = moment().subtract(120, 'days').unix();
@@ -34,14 +35,32 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
         });
         if(idArr.indexOf(item.id) > -1) {
           const addQty = Number(cartItems[idArr.indexOf(item.id)].quantity) + Number(1);
+          if( (qty != null) && (Number(addQty) > Number(qty)) ) {
+              AlertHelper.show('error',  t('max')+' '+qty+' '+t('youcanbuy'));
+              return;
+          }
          dispatch(removeFromCart(item.id));
          dispatch(addToCart({...item, quantity:addQty, singleproduct: item}));
+         AlertHelper.show('success', t('successfullyadded'));
+            return;
         }else {
           //console.warn(item.id);
+          if( (qty != null) && (1 > Number(qty)) ) {
+              AlertHelper.show('error',  t('max')+' '+qty+' '+t('youcanbuy'));
+              return;
+          }
           dispatch(addToCart({...item, quantity:1, singleproduct: item}));
+          AlertHelper.show('success', t('successfullyadded'));
+            return;
         }
     }else {
+      if( (qty != null) && (1 > Number(qty)) ) {
+          AlertHelper.show('error',  t('max')+' '+qty+' '+t('youcanbuy'));
+              return;
+      }
        dispatch(addToCart({...item, quantity:1, singleproduct: item}));
+       AlertHelper.show('success', t('successfullyadded'));
+            return;
     }
   }
   const addtoCartcall = async (item) => {
@@ -53,8 +72,6 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
           if(item.qty > 0) {
             firebase.analytics().logEvent('add_to_cart', { product_id: item.id });
             onAddToCart(item);
-            AlertHelper.show('success', t('successfullyadded'));
-            return;
           }else {
             AlertHelper.show('error', t('outofstock'));
             return;
@@ -94,12 +111,12 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
           //backgroundColor:appColors.lightGray
         }}>
         <Pressable style={{position: 'relative', zIndex: -1}} onPress={() => navigation.navigate('ProductDetails',{pid: id})} >
-        <Image
-          style={{height:height, width:'100%',position: 'relative', zIndex: 1}}
-          source={imgSource}
-          resizeMode={FastImage.resizeMode.contain}
-          onLoad={onImageLoad}
-        />
+          <FastImage
+            style={{ height: height, width: '100%', position: 'relative', zIndex: 1 }}
+            source={imgSource}
+            resizeMode={FastImage.resizeMode.contain}
+            onLoad={onImageLoad}
+          />
         </Pressable>
         {sellprice > 0 && (
              <View style={{
@@ -161,9 +178,22 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
               </View></Pressable> )}
           <>
           {averageRating && (
-            <View style={{ paddingTop: scale(5) }}>
-              <View style={styles.ratingHeader}>
-                <Text style={styles.ratingStars}>{averageRating}★</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star, index) => {
+                  const rating = averageRating;
+                  const isHalfStar = rating - index > 0 && rating - index < 1;
+                  const isFullStar = rating - index >= 1;
+
+                  return (
+                    <MaterialCommunityIcons
+                      key={index}
+                      name={isFullStar ? "star" : isHalfStar ? "star-half-full" : "star-outline"}
+                      size={15}
+                      color={isFullStar || isHalfStar ? '#FFC107' : '#FFC107'}
+                    />
+                  );
+                })}
               </View>
             </View>
           )}
@@ -175,11 +205,11 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
                 text={`${APP_CURRENY.symbol} ${price}`}
                 style={{
                   fontSize: scale(12),
-                  color: appColors.red,
+                  color: appColors.primaryDark,
                   fontWeight: '500',
                   textDecorationLine: 'line-through',
                   textDecorationStyle: 'solid',
-                  textDecorationColor: appColors.red,
+                  textDecorationColor: appColors.primaryDark,
                 }}
               />
               <Label
@@ -235,7 +265,7 @@ const styles = StyleSheet.create({
     backgroundColor: appColors.primary, 
     padding: scale(5),
     borderRadius: scale(5),
-    width: 41,
+    width: 45,
   },
   ratingStars: {
     fontSize: scale(12),

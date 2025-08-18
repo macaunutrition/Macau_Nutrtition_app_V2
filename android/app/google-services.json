@@ -8,6 +8,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:519519096933:android:40ffbad0ec9fe39029b68c",
+        "android_client_info": {
+          "package_name": "com.macauntrition.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0JpYBggCepWXp1PCzNtrNFKEJl3Ow9b0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:519519096933:android:645c540e19351b0729b68c",
         "android_client_info": {
           "package_name": "com.macauntrition.shopapp"

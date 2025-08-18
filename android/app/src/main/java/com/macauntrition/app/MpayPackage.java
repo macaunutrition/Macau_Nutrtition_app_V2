@@ -1,4 +1,4 @@
-package com.macauntrition.shopapp;
+package com.macauntrition.app;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;

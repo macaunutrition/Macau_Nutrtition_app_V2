@@ -19,6 +19,7 @@ import MasonryFlatlist from 'react-native-masonry-grid';
 import { useSelector } from 'react-redux';
 import { APP_IMGURL } from '../../utils/appConfig';
 import { firebase } from '@react-native-firebase/analytics';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 export default function index({navigation}) {
   const cartItems = useSelector(state => state.cart.cartItems);
@@ -114,14 +115,22 @@ export default function index({navigation}) {
     {isLoading ? (
       <>
       <Container>
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <LottieView
-            source={require('../../static/bikelotti.json')}
-            autoPlay
-            loop={true}
-            style={{width: 100, height: 100}}
-          />
-        </View>
+            <View style={{ flex: 1, paddingVertical: scale(25) }}>
+              <SkeletonPlaceholder borderRadius={10}>
+                <SkeletonPlaceholder.Item style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: scale(20) }}>
+                  <SkeletonPlaceholder.Item width={width / 2.4} marginRight={10} height={300} />
+                  <SkeletonPlaceholder.Item width={width / 2.4} height={300} />
+                </SkeletonPlaceholder.Item>
+                <SkeletonPlaceholder.Item style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: scale(20) }}>
+                  <SkeletonPlaceholder.Item width={width / 2.4} marginRight={10} height={300} />
+                  <SkeletonPlaceholder.Item width={width / 2.4} height={300} />
+                </SkeletonPlaceholder.Item>
+                <SkeletonPlaceholder.Item style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: scale(20) }}>
+                  <SkeletonPlaceholder.Item width={width / 2.4} marginRight={10} height={300} />
+                  <SkeletonPlaceholder.Item width={width / 2.4} height={300} />
+                </SkeletonPlaceholder.Item>
+              </SkeletonPlaceholder>
+            </View>
       </Container>
       </>
     ) : (

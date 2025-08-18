@@ -11,14 +11,16 @@ export default function index({
   style,
   onPress,
   labelStyle,
-  isLoading
+  isLoading,
+  isDisabled
 }) {
   return (
     <TouchableRipple
       rippleColor={appColors.primary}
       onPress={onPress}
       rippleDuration={800}
-      style={[styles.container, unFilled ? styles.unFilled : {}, style]}>
+      style={[styles.container, unFilled ? styles.unFilled : {}, style, isDisabled ? styles.disabled : {}]}
+      disabled={isDisabled}>
       {icon && (
         <Feather
           name={icon}
@@ -66,5 +68,8 @@ const styles = StyleSheet.create({
   },
   unFilledLabel: {
     color: appColors.black,
+  },
+  disabled: {
+    backgroundColor: appColors.gray,
   },
 });

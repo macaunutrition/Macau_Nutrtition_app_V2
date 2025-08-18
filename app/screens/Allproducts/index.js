@@ -156,14 +156,22 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
       <>
       {_renderHeader()}
       <Container>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <LottieView
-          source={require('../../static/bikelotti.json')}
-          autoPlay
-          loop={true}
-          style={{width: 150, height: 150}}
-        />
-      </View>
+            <View style={{ flex: 1 }}>
+              <SkeletonPlaceholder borderRadius={10}>
+                <SkeletonPlaceholder.Item style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: scale(20) }}>
+                  <SkeletonPlaceholder.Item width={width / 2.4} marginRight={10} height={300} />
+                  <SkeletonPlaceholder.Item width={width / 2.4} height={300} />
+                </SkeletonPlaceholder.Item>
+                <SkeletonPlaceholder.Item style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: scale(20) }}>
+                  <SkeletonPlaceholder.Item width={width / 2.4} marginRight={10} height={300} />
+                  <SkeletonPlaceholder.Item width={width / 2.4} height={300} />
+                </SkeletonPlaceholder.Item>
+                <SkeletonPlaceholder.Item style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: scale(20) }}>
+                  <SkeletonPlaceholder.Item width={width / 2.4} marginRight={10} height={300} />
+                  <SkeletonPlaceholder.Item width={width / 2.4} height={300} />
+                </SkeletonPlaceholder.Item>
+              </SkeletonPlaceholder>
+            </View>
       </Container>
       </>
     ) : (

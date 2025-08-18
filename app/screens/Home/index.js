@@ -107,7 +107,7 @@ function Home({cart:{ cartItems },navigation}) {
      setCategoriesLoading(false);
 
      setBrandsLoading(true);
-     const getbrnd = await getAllData('brands',8);
+     const getbrnd = await getAllData('brands',8,0);
      const brnd: any[] = [];
      getbrnd.forEach(doc => {
         brnd.push({
@@ -308,300 +308,285 @@ function Home({cart:{ cartItems },navigation}) {
     </View>
   );
 
-  // Lottie animation component
-  const LoadingAnimation = () => (
-    <View style={styles.lottieContainer}>
-      <LottieView
-        source={require('../../static/bikelotti.json')}
-        autoPlay
-        loop={true}
-        style={{ width: 150, height: 150 }}
-      />
-    </View>
-  );
+
 
   return (
     <>
-    {initialLoading ? (
-      <LoadingAnimation />
-    ) : (
-      <>
-        <SafeAreaView>
-          <View style={styles.homwsearchpdning}>
-            <SearchBox isEditable={false} autoFocus={'false'}/>
+      <SafeAreaView>
+        <View style={styles.homwsearchpdning}>
+          <SearchBox isEditable={false} autoFocus={'false'} />
+        </View>
+      </SafeAreaView>
+      <Container isScrollable style={styles.container}>
+        {bannerLoading ? (
+          <BannerSkeleton />
+        ) : (
+          <View>
+            <SliderBox
+              images={bannerlist}
+              sliderBoxHeight={180}
+              parentWidth={Dimensions.get('window').width - 45}
+              dotColor="#76b729"
+              inactiveDotColor="#90A4AE"
+              paginationBoxVerticalPadding={0}
+              autoplay
+              autoplayInterval={5000}
+              circleLoop
+              resizeMethod={'resize'}
+              resizeMode={'cover'}
+              paginationBoxStyle={{
+                position: "absolute",
+                bottom: 0,
+                padding: 0,
+                alignItems: "center",
+                alignSelf: "center",
+                justifyContent: "center",
+                paddingVertical: 10
+              }}
+              dotStyle={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                marginHorizontal: 0,
+                padding: 0,
+                margin: 0,
+                backgroundColor: "rgba(128, 128, 128, 0.92)"
+              }}
+              ImageComponentStyle={{ borderRadius: 15, width: '100%', marginTop: 5 }}
+              imageLoadingColor="#76b729"
+            />
           </View>
-        </SafeAreaView>
-        <Container isScrollable style={styles.container}>
-          {bannerLoading ? (
-            <BannerSkeleton />
-          ) : (
-            <View>
-              <SliderBox
-                images={bannerlist}
-                sliderBoxHeight={180}
-                parentWidth={Dimensions.get('window').width-45}
-                dotColor="#76b729"
-                inactiveDotColor="#90A4AE"
-                paginationBoxVerticalPadding={0}
-                autoplay
-                circleLoop
-                resizeMethod={'resize'}
-                resizeMode={'cover'}
-                paginationBoxStyle={{
-                  position: "absolute",
-                  bottom: 0,
-                  padding: 0,
-                  alignItems: "center",
-                  alignSelf: "center",
-                  justifyContent: "center",
-                  paddingVertical: 10
-                }}
-                dotStyle={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
-                  marginHorizontal: 0,
-                  padding: 0,
-                  margin: 0,
-                  backgroundColor: "rgba(128, 128, 128, 0.92)"
-                }}
-                ImageComponentStyle={{borderRadius: 15, width: '100%', marginTop: 5}}
-                imageLoadingColor="#76b729"
-              />
-            </View>
-          )}
-          {categoriesLoading ? (
-            <CategorySkeleton />
-          ) : (
-            <View style={{paddingVertical: scale(30)}}>
+        )}
+        {categoriesLoading ? (
+          <CategorySkeleton />
+        ) : (
+          <View style={{ paddingVertical: scale(30) }}>
+            <Pressable onPress={() => {
+              navigation.navigate('Allcat');
+            }}>
+              <RenderTitle heading={t('categories')} rightLabel={t('seeall')} />
+            </Pressable>
+            <FlatList
+              style={{ marginTop: scale(40) }}
+              numColumns='4'
+              showsVerticalScrollIndicator={true}
+              Vertical
+              data={categorylist}
+              nestedScrollEnabled={true}
+              ItemSeparatorComponent={() => <View style={{ padding: scale(10) }} />}
+              renderItem={({ item, index }) => {
+                const { id, name, cname, Icon, image } = item;
+                const imgSource = image ? { uri: image } : placeholder;
+                return (
+                  <View key={index} style={{ alignItems: 'center', marginRight: scale(10), width: "22.6%" }}>
+                    <TouchableRipple
+                      onPress={() => {
+                        navigation.navigate('Category', { item });
+                      }}
+                      rippleColor={appColors.primary}
+                      rippleContainerBorderRadius={scale(40)}
+                      rippleDuration={800}
+                      style={{
+                        ...borderwith,
+                        height: scale(70),
+                        width: scale(70),
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: scale(40),
+                      }}>
+                      <FastImage
+                        style={{ height: scale(70), width: scale(70), borderRadius: scale(40) }}
+                        source={imgSource}
+                        resizeMode={FastImage.resizeMode.contain}
+                      />
+                    </TouchableRipple>
+                    {i18n.language == 'en' ? (
+                      <View style={{ marginTop: scale(15) }}>
+                        <Label text={name} style={{ fontSize: scale(14), textAlign: 'center', }} />
+                      </View>) : (
+                      <View style={{ marginTop: scale(15) }}>
+                        <Label text={cname} style={{ fontSize: scale(14), textAlign: 'center', }} />
+                      </View>)}
+                  </View>
+                );
+              }}
+            />
+          </View>
+        )}
+        {brandsLoading ? (
+          <CategorySkeleton />
+        ) : (
+          <View style={{ paddingVertical: scale(30) }}>
+            <Pressable onPress={() => {
+              navigation.navigate('Allbrand');
+            }}>
+              <RenderTitle heading={t('brands')} rightLabel={t('seeall')} />
+            </Pressable>
+            <FlatList
+              style={{ marginTop: scale(40) }}
+              numColumns='4'
+              showsVerticalScrollIndicator={false}
+              Vertical
+              data={brandlist}
+              nestedScrollEnabled={true}
+              ItemSeparatorComponent={() => <View style={{ padding: scale(10) }} />}
+              renderItem={({ item, index }) => {
+                const { id, bname, bcname, Icon, image } = item;
+                const imgSource2 = image ? { uri: image } : placeholder;
+                return (
+                  <View key={index} style={{ alignItems: 'center', marginRight: scale(10), width: "22.6%" }}>
+                    <TouchableRipple
+                      onPress={() => {
+                        navigation.navigate('Brand', { item });
+                      }}
+                      rippleColor={appColors.primary}
+                      rippleContainerBorderRadius={scale(40)}
+                      rippleDuration={800}
+                      style={{
+                        ...borderwith,
+                        height: scale(70),
+                        width: scale(70),
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: scale(40),
+                      }}>
+                      <FastImage
+                        style={{ height: scale(70), width: scale(70), borderRadius: scale(40) }}
+                        source={imgSource2}
+                        resizeMode={FastImage.resizeMode.contain}
+                      />
+                    </TouchableRipple>
+                    {i18n.language == 'en' ? (
+                      <View style={{ marginTop: scale(15) }}>
+                        <Label text={bname} style={{ fontSize: scale(14), textAlign: 'center' }} />
+                      </View>) : (
+                      <View style={{ marginTop: scale(15) }}>
+                        <Label text={bcname} style={{ fontSize: scale(14), textAlign: 'center' }} />
+                      </View>)}
+                  </View>
+                );
+              }}
+            />
+          </View>
+        )}
+        {productsLoading ? (
+          <ProductSkeleton />
+        ) : (
+          <View>
+            <View style={{ paddingVertical: scale(25) }}>
               <Pressable onPress={() => {
-                navigation.navigate('Allcat');
+                navigation.navigate('Allproducts', { 'type': 'newproducts' })
               }}>
-                <RenderTitle heading={t('categories')} rightLabel={t('seeall')} />
+                <RenderTitle heading={t('new')} rightLabel={t('seeall')} />
               </Pressable>
-              <FlatList
-                style={{marginTop: scale(40)}}
-                numColumns='4'
-                showsVerticalScrollIndicator={true}
-                Vertical
-                data={categorylist}
-                nestedScrollEnabled={true}
-                ItemSeparatorComponent={() => <View style={{padding: scale(10)}} />}
-                renderItem={({item, index}) => {
-                  const {id, name, cname, Icon, image} = item;
-                  const imgSource = image ? { uri: image } : placeholder;
-                  return (
-                    <View key={index} style={{alignItems: 'center', marginRight: scale(10), width:"22.6%"}}>
-                      <TouchableRipple
-                        onPress={() => {
-                          navigation.navigate('Category', {item});
-                        }}
-                        rippleColor={appColors.primary}
-                        rippleContainerBorderRadius={scale(40)}
-                        rippleDuration={800}
-                        style={{
-                          ...borderwith,
-                          height: scale(70),
-                          width: scale(70),
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          borderRadius: scale(40),
-                        }}>
-                          <FastImage
-                            style={{height:scale(70), width:scale(70),  borderRadius: scale(40)}}
-                            source={imgSource}
-                            resizeMode={FastImage.resizeMode.contain}
-                          />
-                      </TouchableRipple>
-                      {i18n.language == 'en' ? (
-                        <View style={{marginTop: scale(15)}}>
-                        <Label text={name} style={{fontSize: scale(14),textAlign: 'center',}} />
-                      </View> ) : (
-                        <View style={{marginTop: scale(15)}}>
-                          <Label text={cname} style={{fontSize: scale(14),textAlign: 'center',}} />
-                        </View> )}
-                    </View>
-                  );
-                }}
-              />
             </View>
-          )}
-          {brandsLoading ? (
-            <CategorySkeleton />
-          ) : (
-            <View style={{paddingVertical: scale(30)}}>
+            <MasonryFlatlist
+              data={productlist}
+              numColumns={2} // for number of columns
+              initialColToRender={10}
+              columnWrapperStyle={styles.columnWrapperStyle}
+              keyExtractor={(item, index) => index.toString()}
+              showsVerticalScrollIndicator={false}
+              style={styles.masonryFlatlist}
+              loading={true}
+              //onEndReached={getMoreProducts()}
+              //onEndReachedThreshold={0.5}
+              nestedScrollEnabled={true}
+              //scrollEventThrottle={150}
+              renderItem={({ item, index }) => {
+                if (index % 2 == 0) {
+                  return <View style={styles.ProductCardodd}><ProductCard key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
+                } else {
+                  return <View style={styles.ProductCardeven}><ProductCard key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
+                }
+
+              }}
+              ListFooterComponent={() =>
+                !lastItem && <Spinner />
+              }
+            />
+
+          </View>
+        )}
+        {bestsellerLoading ? (
+          <ProductSkeleton />
+        ) : (
+          <View>
+            <View style={{ paddingVertical: scale(25) }}>
               <Pressable onPress={() => {
-                navigation.navigate('Allbrand');
+                navigation.navigate('Allproducts', { 'type': 'bestseller' })
               }}>
-                <RenderTitle heading={t('brands')} rightLabel={t('seeall')} />
+                <RenderTitle heading={t('bestseller')} rightLabel={t('seeall')} />
               </Pressable>
-              <FlatList
-                style={{marginTop: scale(40)}}
-                numColumns='4'
-                showsVerticalScrollIndicator={false}
-                Vertical
-                data={brandlist}
-                nestedScrollEnabled={true}
-                ItemSeparatorComponent={() => <View style={{padding: scale(10)}} />}
-                renderItem={({item, index}) => {
-                  const {id, bname, bcname, Icon, image} = item;
-                  const imgSource2 = image ? { uri: image } : placeholder;
-                  return (
-                    <View key={index} style={{alignItems: 'center', marginRight: scale(10),width:"22.6%"}}>
-                      <TouchableRipple
-                        onPress={() => {
-                          navigation.navigate('Brand', {item});
-                        }}
-                        rippleColor={appColors.primary}
-                        rippleContainerBorderRadius={scale(40)}
-                        rippleDuration={800}
-                        style={{
-                          ...borderwith,
-                          height: scale(70),
-                          width: scale(70),
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          borderRadius: scale(40),
-                        }}>
-                        <FastImage
-                          style={{height:scale(70), width:scale(70),borderRadius: scale(40)}}
-                          source={imgSource2}
-                          resizeMode={FastImage.resizeMode.contain}
-                        />
-                      </TouchableRipple>
-                      {i18n.language == 'en' ? (
-                        <View style={{marginTop: scale(15)}}>
-                        <Label text={bname} style={{fontSize: scale(14),textAlign: 'center'}} />
-                      </View> ) : (
-                        <View style={{marginTop: scale(15)}}>
-                          <Label text={bcname} style={{fontSize: scale(14),textAlign: 'center'}} />
-                        </View> )}
-                    </View>
-                  );
-                }}
-              />
             </View>
-          )}
-          {productsLoading ? (
-            <ProductSkeleton />
-          ) : (
-            <View>
-              <View style={{paddingVertical: scale(25)}}>
-                <Pressable onPress={() => {
-                  navigation.navigate('Allproducts', { 'type': 'newproducts' })
-                }}>
-                  <RenderTitle heading={t('new')} rightLabel={t('seeall')} />
-                </Pressable>
-              </View>
-              <MasonryFlatlist
-                data={productlist}
-                numColumns={2} // for number of columns
-                initialColToRender={10}
-                columnWrapperStyle={styles.columnWrapperStyle}
-                keyExtractor={(item,index) => index.toString()}
-                showsVerticalScrollIndicator={false}
-                style={styles.masonryFlatlist}
-                loading= {true}
-                //onEndReached={getMoreProducts()}
-                //onEndReachedThreshold={0.5}
-                nestedScrollEnabled={true}
-                //scrollEventThrottle={150}
-                renderItem={({ item, index }) => {
-                   if (index % 2 == 0) {
-                     return <View style={styles.ProductCardodd}><ProductCard   key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
-                   }else {
-                     return <View style={styles.ProductCardeven}><ProductCard  key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
-                   }
-
-                }}
-                ListFooterComponent={() =>
-                  !lastItem && <Spinner />
+            <MasonryFlatlist
+              data={bestsellerlist}
+              numColumns={2} // for number of columns
+              initialColToRender={10}
+              columnWrapperStyle={styles.columnWrapperStyle}
+              keyExtractor={(item, index) => index.toString()}
+              showsVerticalScrollIndicator={false}
+              style={styles.masonryFlatlist}
+              loading={true}
+              //onEndReached={getMoreProducts()}
+              //onEndReachedThreshold={0.5}
+              nestedScrollEnabled={true}
+              //scrollEventThrottle={150}
+              renderItem={({ item, index }) => {
+                if (index % 2 == 0) {
+                  return <View style={styles.ProductCardodd}><ProductCard key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
+                } else {
+                  return <View style={styles.ProductCardeven}><ProductCard key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
                 }
-              />
 
+              }}
+              ListFooterComponent={() =>
+                !lastItem && <Spinner />
+              }
+            />
+
+          </View>
+        )}
+        {popularLoading ? (
+          <ProductSkeleton />
+        ) : (
+          <View>
+            <View style={{ paddingVertical: scale(25) }}>
+              <Pressable onPress={() => {
+                navigation.navigate('Allproducts', { 'type': 'promotion' })
+              }}>
+                <RenderTitle heading={t('promotion')} rightLabel={t('seeall')} />
+              </Pressable>
             </View>
-          )}
-          {bestsellerLoading ? (
-            <ProductSkeleton />
-          ) : (
-            <View>
-              <View style={{paddingVertical: scale(25)}}>
-                <Pressable onPress={() => {
-                  navigation.navigate('Allproducts', { 'type': 'bestseller' })
-                }}>
-                  <RenderTitle heading={t('bestseller')} rightLabel={t('seeall')} />
-                </Pressable>
-              </View>
-              <MasonryFlatlist
-                data={bestsellerlist}
-                numColumns={2} // for number of columns
-                initialColToRender={10}
-                columnWrapperStyle={styles.columnWrapperStyle}
-                keyExtractor={(item,index) => index.toString()}
-                showsVerticalScrollIndicator={false}
-                style={styles.masonryFlatlist}
-                loading= {true}
-                //onEndReached={getMoreProducts()}
-                //onEndReachedThreshold={0.5}
-                nestedScrollEnabled={true}
-                //scrollEventThrottle={150}
-                renderItem={({ item, index }) => {
-                   if (index % 2 == 0) {
-                     return <View style={styles.ProductCardodd}><ProductCard   key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
-                   }else {
-                     return <View style={styles.ProductCardeven}><ProductCard  key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
-                   }
-
-                }}
-                ListFooterComponent={() =>
-                  !lastItem && <Spinner />
+            <MasonryFlatlist
+              data={popularlist}
+              numColumns={2} // for number of columns
+              initialColToRender={10}
+              columnWrapperStyle={styles.columnWrapperStyle}
+              keyExtractor={(item, index) => index.toString()}
+              showsVerticalScrollIndicator={false}
+              style={styles.masonryFlatlist}
+              loading={true}
+              //onEndReached={getMoreProducts()}
+              //onEndReachedThreshold={0.5}
+              nestedScrollEnabled={true}
+              //scrollEventThrottle={150}
+              renderItem={({ item, index }) => {
+                if (index % 2 == 0) {
+                  return <View style={styles.ProductCardodd}><ProductCard key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
+                } else {
+                  return <View style={styles.ProductCardeven}><ProductCard key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
                 }
-              />
 
-            </View>
-          )}
-          {popularLoading ? (
-            <ProductSkeleton />
-          ) : (
-            <View>
-              <View style={{paddingVertical: scale(25)}}>
-                <Pressable onPress={() => {
-                  navigation.navigate('Allproducts', { 'type': 'promotion' })
-                }}>
-                  <RenderTitle heading={t('promotion')} rightLabel={t('seeall')} />
-                </Pressable>
-              </View>
-              <MasonryFlatlist
-                data={popularlist}
-                numColumns={2} // for number of columns
-                initialColToRender={10}
-                columnWrapperStyle={styles.columnWrapperStyle}
-                keyExtractor={(item,index) => index.toString()}
-                showsVerticalScrollIndicator={false}
-                style={styles.masonryFlatlist}
-                loading= {true}
-                //onEndReached={getMoreProducts()}
-                //onEndReachedThreshold={0.5}
-                nestedScrollEnabled={true}
-                //scrollEventThrottle={150}
-                renderItem={({ item, index }) => {
-                   if (index % 2 == 0) {
-                     return <View style={styles.ProductCardodd}><ProductCard   key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
-                   }else {
-                     return <View style={styles.ProductCardeven}><ProductCard  key={index} navigation={navigation} item={item} cartItems={cartItems} /></View>;
-                   }
+              }}
+              ListFooterComponent={() =>
+                !lastItem && <Spinner />
+              }
+            />
 
-                }}
-                ListFooterComponent={() =>
-                  !lastItem && <Spinner />
-                }
-              />
-
-            </View>
-          )}
-        </Container>
-      </>
-    )}
+          </View>
+        )}
+      </Container>
     </>
   );
 }

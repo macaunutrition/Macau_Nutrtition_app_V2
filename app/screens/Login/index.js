@@ -33,12 +33,28 @@ function index({getProductsList$,loginUser$, navigation}) {
   const [user, setUser] = useState(null);
 
   const [mobile, setMobile] = useState(null);
-
+  const [mobileCode, setMobileCode] = useState('MO');
+  const [callingCode, setCallingCode] = useState('853');
   const [confirm, setConfirm] = useState(null);
 
   const [code, setCode] = useState('');
 
   const phoneInput = useRef(null);
+
+  const [resendTimer, setResendTimer] = useState(30); // 30 seconds countdown
+  const [canResend, setCanResend] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    if (confirm && resendTimer > 0) {
+      timer = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setCanResend(true);
+    }
+    return () => clearInterval(timer);
+  }, [confirm, resendTimer]);
 
   const changelanguage = (lang) => {
      i18n.changeLanguage(lang);
@@ -52,7 +68,7 @@ function index({getProductsList$,loginUser$, navigation}) {
       setisloading(true);
 
       try {
-        const confirmation = await auth().signInWithPhoneNumber(mobile);
+        const confirmation = await auth().signInWithPhoneNumber('+'+callingCode+mobile);
         setConfirm(confirmation);
       } catch (e) {
         AlertHelper.show('error', e.message);
@@ -69,7 +85,7 @@ function index({getProductsList$,loginUser$, navigation}) {
     try {
       await confirm.confirm(code);
       setisloading(false);
-      const getU = await getData('users',mobile );
+      const getU = await getData('users','+'+callingCode+mobile );
       if(getU.data()) {
         if(getU.data()['country']) {
           if(getU.data()['rewardpoints']) {
@@ -85,7 +101,7 @@ function index({getProductsList$,loginUser$, navigation}) {
       }else {
         const getnewr = await getData('settings','rewardsettings');
         const newreward = getnewr.data()['newuser'];
-        await writeData('users', mobile, {mobile : mobile, rewardpoints: newreward} );
+        await writeData('users','+'+callingCode+mobile, {mobile : '+'+callingCode+mobile, rewardpoints: newreward} );
         AlertHelper.show('success', t('yougot')+' '+newreward+' '+t('rewardpoints'));
         navigation.navigate('SignUp');
       }
@@ -154,6 +170,32 @@ function index({getProductsList$,loginUser$, navigation}) {
     addanalytics();
   }, []);
 
+  const resendCode = async () => {
+    if (callingCode && mobile && canResend) {
+      setisloading(true);
+      try {
+        const confirmation = await auth().signInWithPhoneNumber('+'+callingCode+mobile);
+        setConfirm(confirmation);
+        setResendTimer(30); // Reset the timer
+        setCanResend(false);
+        AlertHelper.show('success', t('codesent'));
+      } catch (e) {
+        AlertHelper.show('error', e.message);
+        console.log(e);
+      }
+      setisloading(false);
+    } else {
+      AlertHelper.show('error', t('mobilenumberisrequired'));
+    }
+  };
+
+  const backToMobileNumber = () => {
+    setConfirm(null);
+    setCode('');
+    setResendTimer(30); // Reset the timer
+    setCanResend(false);
+  };
+
   return (
     <Container isScrollable>
       <View
@@ -179,13 +221,17 @@ function index({getProductsList$,loginUser$, navigation}) {
                <PhoneInput
                 ref={phoneInput}
                 defaultValue={mobile}
-                defaultCode="MO"
+                defaultCode={mobileCode}
+                onChangeCountry={ (value) => {
+                  setMobileCode(value.cca2);
+                  setCallingCode(value.callingCode);
+                }}
+                onChangeText={ (puremobile) => {
+                  onChangeText('mobile', puremobile)
+                }}
                 placeholder={t('mobilenumber')}
                 containerStyle={{borderRadius:6}}
                 textContainerStyle={{paddingVertical:5, backgroundColor:appColors.lightGray,borderTopRightRadius:6,borderBottomRightRadius:6}}
-                onChangeFormattedText={(text) => {
-                   onChangeText('mobile', text)
-                }}
                 withDarkTheme
                 withShadow
                 autoFocus
@@ -205,6 +251,16 @@ function index({getProductsList$,loginUser$, navigation}) {
                  label=""
                />
                 <CustomButton isLoading={isloading}  onPress={confirmCode} label={t('confirmcode')} />
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 10}}>
+                  <TouchableOpacity onPress={backToMobileNumber}>
+                    <Text style={{color: appColors.primary}}>{t('backtomobile')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={resendCode} disabled={!canResend}>
+                    <Text style={{color: canResend ? appColors.primary : appColors.gray}}>
+                      {canResend ? t('resendcode') : `${t('resendcodein')} ${resendTimer}s`}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                </>
              )}
        </View>
@@ -222,7 +278,7 @@ function index({getProductsList$,loginUser$, navigation}) {
         {/* Other content */}
         <View style={styles.bottomView}>
           <Text style={{color:appColors.primary,fontSize:15,marginBottom:10}} onPress={() => refRBSheet.current.open()}>語言 Language</Text>
-          <Text style={{fontSize:scale(11)}}>Version 1.2.5</Text>
+          <Text style={{fontSize:scale(11)}}>Version 1.3.0</Text>
         </View>
       </View>
        <RBSheet

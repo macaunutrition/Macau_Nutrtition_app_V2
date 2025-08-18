@@ -1,6 +1,5 @@
 import React, {useRef, useEffect, useState} from 'react';
 import {StyleSheet,View, Text, FlatList, Pressable,RefreshControl, SafeAreaView, ActivityIndicator,Dimensions} from 'react-native';
-import LottieView from 'lottie-react-native';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {scale} from 'react-native-size-matters';
 import Container from '../../components/Container';
@@ -157,6 +156,14 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
            <SkeletonPlaceholder.Item width={width/2.4} marginRight={10} height={300} />
            <SkeletonPlaceholder.Item width={width/2.4} height={300} />
          </SkeletonPlaceholder.Item>
+         <SkeletonPlaceholder.Item style={{flexDirection: 'row', alignItems:'center',justifyContent: 'space-between',marginBottom:scale(20)}}>
+           <SkeletonPlaceholder.Item width={width/2.4} marginRight={10} height={300} />
+           <SkeletonPlaceholder.Item width={width/2.4} height={300} />
+         </SkeletonPlaceholder.Item>
+         <SkeletonPlaceholder.Item style={{flexDirection: 'row', alignItems:'center',justifyContent: 'space-between',marginBottom:scale(20)}}>
+           <SkeletonPlaceholder.Item width={width/2.4} marginRight={10} height={300} />
+           <SkeletonPlaceholder.Item width={width/2.4} height={300} />
+         </SkeletonPlaceholder.Item>
        </SkeletonPlaceholder>
      );
    };
@@ -175,14 +182,7 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
        <>
        {_renderHeader()}
        <Container>
-       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-         <LottieView
-           source={require('../../static/bikelotti.json')}
-           autoPlay
-           loop={true}
-           style={{width: 150, height: 150}}
-         />
-       </View>
+          {renderSkeletonGrid()}
        </Container>
        </>
      ) : (
@@ -193,8 +193,7 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
              renderEmptyState()
            ) : (
              <>
-               {!imagesLoaded && renderSkeletonGrid()}
-               <View style={{flex: 1, marginBottom:scale(0), alignItems:'center', display: !imagesLoaded ? 'none' : 'flex'}}>
+               <View style={{flex: 1, marginBottom:scale(0), alignItems:'center'}}>
                  <MasonryFlatlist
                    data={productlist}
                    numColumns={2}
@@ -208,25 +207,35 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
                    keyExtractor={(item) => item.id}
                    renderItem={({ item, index }) => {
                      if (index % 2 == 0) {
-                       return <View style={styles.ProductCardodd}>
-                         <ProductCard 
-                           onImageLoad={handleImageLoaded} 
-                           navigation={navigation} 
-                           key={index} 
-                           item={item} 
-                           cartItems={cartItems}
-                         />
-                       </View>;
+                       return (
+                         <View style={styles.ProductCardodd}>
+                           <ProductCard 
+                             navigation={navigation} 
+                             key={index} 
+                             item={item} 
+                             cartItems={cartItems}
+                             onImageLoad={() => {
+                               console.log('Image loaded callback for index:', index);
+                               handleImageLoaded();
+                             }}
+                           />
+                         </View>
+                       );
                      } else {
-                       return <View style={styles.ProductCardeven}>
-                         <ProductCard 
-                           onImageLoad={handleImageLoaded} 
-                           navigation={navigation} 
-                           key={index} 
-                           item={item} 
-                           cartItems={cartItems}
-                         />
-                       </View>;
+                       return (
+                         <View style={styles.ProductCardeven}>
+                           <ProductCard 
+                             navigation={navigation} 
+                             key={index} 
+                             item={item} 
+                             cartItems={cartItems}
+                             onImageLoad={() => {
+                               console.log('Image loaded callback for index:', index);
+                               handleImageLoaded();
+                             }}
+                           />
+                         </View>
+                       );
                      }
                    }}
                    ListFooterComponent={() => (
@@ -238,10 +247,10 @@ function index({cart:{ cartItems }, navigation, route: {params}}) {
                    )}
                  />
                  {isLoadingMore && (
-                  <View style={{backgroundColor:'transparent', width:'100%', alignItems:'center', justifyContent:'center'}}>
-                    <ActivityIndicator size="large" color={appColors.primary} />
-                  </View>
-                )}
+                   <View style={{backgroundColor:'transparent', width:'100%', alignItems:'center', justifyContent:'center'}}>
+                     <ActivityIndicator size="large" color={appColors.primary} />
+                   </View>
+                 )}
                </View>
              </>
            )}

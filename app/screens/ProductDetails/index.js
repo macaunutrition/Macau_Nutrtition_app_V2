@@ -1,5 +1,5 @@
 import React, {useRef, useCallback,useEffect, useState} from 'react';
-import {View, Modal, TouchableOpacity, Text, TextInput, ActivityIndicator, Button, StyleSheet,SafeAreaView, ImageBackground, Pressable, Dimensions, ScrollView, Alert} from 'react-native';
+import {View, Modal, Image,TouchableOpacity, Text, TextInput, ActivityIndicator, Button, StyleSheet,SafeAreaView, ImageBackground, Pressable, Dimensions, ScrollView, Alert} from 'react-native';
 import LottieView from 'lottie-react-native';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Share from 'react-native-share';
@@ -34,6 +34,8 @@ import { ImageZoom } from '@likashefqet/react-native-image-zoom';
 import { firebase } from '@react-native-firebase/analytics';
 import { createOrUpdateRating, getRatings, checkUserRated, checkUserBoughtProduct } from '../../utils/ratings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
 
 
 function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addToCart$,removeToWishList$,removeFromCart$, navigation,route:{params}}) {
@@ -257,6 +259,7 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
             const addQty = Number(cartItems[idArr.indexOf(singleproduct.id)].quantity) + Number(buyqty);
             if( (selecoptionqty != null) && (Number(addQty) > Number(selecoptionqty)) ) {
               AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
+              return 'error';
             }else {
               removeFromCart$(singleproduct.id);
               firebase.analytics().logEvent('add_to_cart', { product_id: singleproduct.pid });
@@ -272,25 +275,44 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
             const addQty = Number(cartItems[idArr.indexOf(singleproduct.id)].quantity) + Number(buyqty);
             if( (selecoptionqty != null) && (Number(addQty) > Number(selecoptionqty)) ) {
               AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
+              return 'error';
             }else {
+              if( (selecoptionqty != null) && (Number(addQty) > Number(selecoptionqty)) ) {
+                AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
+                return 'error';
+              }
               removeFromCart$(singleproduct.id);
               firebase.analytics().logEvent('add_to_cart', { product_id: singleproduct.pid });
               addToCart$({...singleproduct, quantity:addQty,...selecoptionall ,sizedetails: selectedsizeoption, singleproduct: singleproduct});
             }
           }else {
+            if( (selecoptionqty != null) && (Number(buyqty) > Number(selecoptionqty)) ) {
+                AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
+                return 'error';
+            }
             firebase.analytics().logEvent('add_to_cart', { product_id: singleproduct.pid });
             addToCart$({...singleproduct, quantity:buyqty, ...selecoptionall ,sizedetails: selectedsizeoption, singleproduct: singleproduct});
           }
         }
     }else {
       if(singleproduct?.variationname) {
-          singleproduct.id = singleproduct.pid+selopIndexid+selsizeindex;
-          firebase.analytics().logEvent('add_to_cart', { product_id: singleproduct.pid });
-          firebase.analytics().logEvent('variation_name', { variation_name: selecoptionname });
-          addToCart$({...singleproduct, quantity:buyqty, ...selecoptionall,sizedetails: selectedsizeoption, singleproduct: singleproduct});
+          if( (selecoptionqty != null) && (Number(buyqty) > Number(selecoptionqty)) ) {
+            AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
+            return 'error';
+          }else {
+            singleproduct.id = singleproduct.pid+selopIndexid+selsizeindex;
+            firebase.analytics().logEvent('add_to_cart', { product_id: singleproduct.pid });
+            firebase.analytics().logEvent('variation_name', { variation_name: selecoptionname });
+            addToCart$({...singleproduct, quantity:buyqty, ...selecoptionall,sizedetails: selectedsizeoption, singleproduct: singleproduct});
+          }
       }else {
         firebase.analytics().logEvent('add_to_cart', { product_id: singleproduct.pid });
-        addToCart$({...singleproduct, quantity:buyqty, ...selecoptionall,sizedetails: selectedsizeoption, singleproduct: singleproduct});
+        if( (selecoptionqty != null) && (Number(buyqty) > Number(selecoptionqty)) ) {
+          AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
+          return 'error';
+        }else {
+         addToCart$({...singleproduct, quantity:buyqty, ...selecoptionall,sizedetails: selectedsizeoption, singleproduct: singleproduct});
+        }
       }
     }
   };
@@ -384,17 +406,23 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
             <SkeletonPlaceholder.Item width={width} height={400} />
           </SkeletonPlaceholder>
         )}
-        <ImageZoom
-          uri={item.url}
-          minScale={1}
-          maxScale={5}
-          doubleTapScale={3}
-          isSingleTapEnabled
-          isDoubleTapEnabled
-          style={[styles.imageslide, {display: loaded ? 'flex' : 'none'}]}
-          resizeMode="cover"
+        <Image
+          source={{ uri: item.url }}
+          style={{ width: '100%', height: 400, display: loaded ? 'none' : '' }}
           onLoad={() => setLoaded(true)}
         />
+        {loaded && (
+          <ImageZoom
+            uri={item.url}
+            minScale={1}
+            maxScale={5}
+            doubleTapScale={3}
+            isSingleTapEnabled
+            isDoubleTapEnabled
+            style={styles.imageslide}
+            resizeMode="cover"
+          />
+        )}
       </>
     );
   };
@@ -404,17 +432,11 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     
     return (
       <>
-        {!loaded && (
-          <SkeletonPlaceholder borderRadius={0}>
-            <SkeletonPlaceholder.Item width={width} height={400} />
-          </SkeletonPlaceholder>
-        )}
         <Video
           source={{ uri: item.uri }}
           style={[styles.media, {display: loaded ? 'flex' : 'none'}]}
           resizeMode="cover"
           controls={true}
-          onLoad={() => setLoaded(true)}
         />
       </>
     );
@@ -455,15 +477,19 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
         if( (selecoptionqty !== null) && (Number(buyqty) > Number(selecoptionqty))) {
           AlertHelper.show('error', t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
         }else {
-          onAddToCart();
-          AlertHelper.show('success', t('successfullyadded'));
+          if((onAddToCart())._j != 'error') {
+            AlertHelper.show('success', t('successfullyadded'));
+            return;
+          }
         }
       }else {
         if( (selecoptionqty != null) && (Number(buyqty) > Number(selecoptionqty)) ) {
           AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
         }else {
-          onAddToCart();
-          AlertHelper.show('success',  t('successfullyadded'));
+          if((onAddToCart())._j != 'error') {
+            AlertHelper.show('success', t('successfullyadded'));
+            return;
+          }
         }
       }
     }
@@ -490,15 +516,17 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
         if( (selecoptionqty != null) && (Number(buyqty) > Number(selecoptionqty))) {
           AlertHelper.show('error',  t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
         }else {
-          onAddToCart();
-          navigation.navigate('Cart');
+          if(onAddToCart() != 'error') {
+             navigation.navigate('Cart');
+          }
         }
       }else {
         if( (selecoptionqty != null) && (Number(buyqty) > Number(selecoptionqty)) ) {
           AlertHelper.show('error', t('max')+' '+selecoptionqty+' '+t('youcanbuy'));
         }else {
-          onAddToCart();
-          navigation.navigate('Cart');
+          if(onAddToCart() != 'error') {
+            navigation.navigate('Cart');
+          }
         }
       }
     }
@@ -654,6 +682,35 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
       });
     }
   }
+  const renderSkeletonGrid = () => {
+    return (
+      <SkeletonPlaceholder borderRadius={4}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center">
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item marginTop={6} marginBottom={10} width={width / 2} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+        <SkeletonPlaceholder.Item>
+          <SkeletonPlaceholder.Item width={width} height={300} />
+        </SkeletonPlaceholder.Item>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center">
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={120} height={20} />
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={240} height={20} />
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width - 40} height={20} />
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={120} height={20} />
+            <SkeletonPlaceholder.Item marginTop={30} marginBottom={10} marginLeft={'auto'} marginRight={'auto'} width={150} height={40} />
+            <SkeletonPlaceholder.Item marginTop={15} marginBottom={10} marginLeft={'auto'} marginRight={'auto'} width={150} height={40} />
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width - 40} height={20} />
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width - 40} height={20} />
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width - 40} height={20} />
+            <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width - 40} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder>
+    );
+  };
+
   
   useEffect( () => {
     loadSIngleproducts();
@@ -682,49 +739,17 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
             <Feather name="chevron-left" color={appColors.white} size={scale(25)} />
           </Pressable>
         </View>
-        <View style={{  flexDirection: 'row',justifyContent: 'space-between'}}>
+        <View>
           <SkeletonPlaceholder borderRadius={4}>
             <SkeletonPlaceholder.Item width={50} height={20} />
           </SkeletonPlaceholder>
          </View>
       </View>
       </SafeAreaView>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <LottieView
-          source={require('../../static/bikelotti.json')}
-          autoPlay
-          loop={true}
-          style={{width: 150, height: 150}}
-        />
+      <View>
+        {renderSkeletonGrid()}
       </View>
-        {/*<SkeletonPlaceholder borderRadius={4}>
-          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center">
-            <SkeletonPlaceholder.Item marginLeft={20}>
-              <SkeletonPlaceholder.Item marginTop={6} marginBottom={10} width={width/2} height={20} />
-            </SkeletonPlaceholder.Item>
-          </SkeletonPlaceholder.Item>
-        </SkeletonPlaceholder>
-        <SkeletonPlaceholder borderRadius={0}>
-          <SkeletonPlaceholder.Item>
-            <SkeletonPlaceholder.Item width={width} height={300} />
-          </SkeletonPlaceholder.Item>
-        </SkeletonPlaceholder>
-        <SkeletonPlaceholder borderRadius={4}>
-          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center">
-            <SkeletonPlaceholder.Item marginLeft={20}>
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={120} height={20} />
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={240} height={20} />
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width-40} height={20} />
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={120} height={20} />
-              <SkeletonPlaceholder.Item marginTop={30} marginBottom={10} marginLeft={'auto'}  marginRight={'auto'} width={150} height={40} />
-              <SkeletonPlaceholder.Item marginTop={15} marginBottom={10} marginLeft={'auto'}  marginRight={'auto'} width={150} height={40} />
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width-40} height={20} />
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width-40} height={20} />
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width-40} height={20} />
-              <SkeletonPlaceholder.Item marginTop={10} marginBottom={10} width={width-40} height={20} />
-            </SkeletonPlaceholder.Item>
-          </SkeletonPlaceholder.Item>
-        </SkeletonPlaceholder>*/}
+     
       </>
     ) : (
       <>
@@ -792,16 +817,38 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
              <View style={{paddingVertical: 20}}>
                <Label
                  text={APP_CURRENY.symbol+' '+dynamicprice}
-                 style={{fontWeight: '700', fontSize: scale(20),color:appColors.red}}
+                 style={{fontWeight: '700', fontSize: scale(20),color:appColors.primaryDark}}
                />
                <TouchableOpacity onPress={() => gotToRatingView()} style={{alignSelf:'flex-start',marginTop: scale(10)}}>
                 {allratings && allratings.averageRating > 0 && (
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                 <Text style={{width: 65,textAlign:'center',fontSize: scale(15),color:appColors.white,backgroundColor:appColors.primary,paddingHorizontal: scale(10),paddingVertical: scale(5),borderRadius: scale(5)}}>
-                  {allratings.averageRating} <Feather name="star" size={16} color={appColors.white} />
-                 </Text>
-                 <Text style={{fontSize: scale(12),color:appColors.darkgray,marginLeft: scale(10)}}>{allratings.totalRatings} {t('reviews')}</Text>
-                 </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          {[1, 2, 3, 4, 5].map((star, index) => {
+                            const rating = allratings.averageRating;
+                            const isHalfStar = rating - index > 0 && rating - index < 1;
+                            const isFullStar = rating - index >= 1;
+
+                            return (
+                              <MaterialCommunityIcons
+                                key={index}
+                                name={isFullStar ? "star" : isHalfStar ? "star-half-full" : "star-outline"}
+                                size={25}
+                                color={isFullStar || isHalfStar ? '#FFC107' : '#FFC107'}
+                              />
+                            );
+                          })}
+                        </View>
+                        <Text
+                          style={{
+                            fontSize: scale(18),
+                            color: appColors.primaryDark,
+                            marginLeft: scale(8),
+                            textDecorationLine: 'underline'
+                          }}
+                        >
+                          {allratings.totalRatings}
+                        </Text>
+                      </View>
                 )}
                </TouchableOpacity>
              </View>
@@ -1050,7 +1097,6 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
 
               </View>
             </View>
-            {allratings && allratings.averageRating > 0 && (
             <ScrollView ref={ratingViewRef}>
                 <View style={{ paddingVertical: scale(20) }}>
                   <View style={styles.reviewHeader}>
@@ -1127,7 +1173,6 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
                   )}
                 </View>
             </ScrollView>
-            )}
           </View>
           {userBoughtProduct && (
           <View>

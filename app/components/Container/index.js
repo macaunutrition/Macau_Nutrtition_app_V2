@@ -23,6 +23,6 @@ const styles = StyleSheet.create({
     },
     innerView:{
         flex:1,
-        paddingHorizontal:scale(20)
+        paddingHorizontal:scale(12) // Reduced from 20 to 12 to make product cards wider (8 pixels closer to edges)
     }
 })

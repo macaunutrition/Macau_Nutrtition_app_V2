@@ -1,0 +1,11 @@
+module.exports = {
+  dependencies: {
+    'MpayModule': {
+      platforms: {
+        ios: {
+          podspecPath: './ios/macaunutrition/MpayModule.podspec', // Correct relative path to the podspec file
+        },
+      },
+    },
+  },
+};

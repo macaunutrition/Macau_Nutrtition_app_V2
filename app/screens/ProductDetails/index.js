@@ -1,10 +1,9 @@
 import React, {useRef, useCallback,useEffect, useState} from 'react';
-import {View, Modal, Image,TouchableOpacity, Text, TextInput, ActivityIndicator, Button, StyleSheet,SafeAreaView, ImageBackground, Pressable, Dimensions, ScrollView, Alert} from 'react-native';
+import {View, Modal, Image,TouchableOpacity, Text, TextInput, ActivityIndicator, Button, StyleSheet,SafeAreaView, ImageBackground, Pressable, Dimensions, ScrollView, Alert, FlatList} from 'react-native';
 import LottieView from 'lottie-react-native';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Share from 'react-native-share';
 import {scale} from 'react-native-size-matters';
-import SimpleStepper from 'react-native-simple-stepper';
 import Container from '../../components/Container';
 import Label from '../../components/Label';
 import CustomButton from '../../components/CustomButton';
@@ -55,6 +54,7 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
   const [buyqty, setBuyqty] = useState(1);
   const scrollViewRef = useRef(null);
   const ratingViewRef = useRef(null);
+  const flavorSelectorRef = useRef(null);
   const [ showGoTop, setShowGoTop ] = useState( false );
   const [ selopIndexid, setSelopIndexid ] = useState( '' );
   const [ selsizeindex, setSelsizeindex ] = useState( '' );
@@ -83,6 +83,10 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
   const [myRating, setMyRating] = useState('');
   const [myReview, setMyReview] = useState('');
   const [isreviewloading, setIsreviewloading] = useState(false);
+  
+  // New state for quantity selector modal
+  const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [quantityModalType, setQuantityModalType] = useState('regular'); // 'regular' or 'variation'
   const loadAllratings = async () => {
     const ratings = await getRatings(pid);
     setAllratings(ratings);
@@ -100,6 +104,34 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
       setMyReview(userRated.comment);
     }
   }
+
+  // Get maximum available quantity in stock
+  const getMaxQuantity = () => {
+    if (singleproduct?.variationname) {
+      return parseInt(selecoptionqty) || 0;
+    } else {
+      return parseInt(singleproduct.qty) || 0;
+    }
+  };
+
+  // Get stock information for display
+  const getStockInfo = () => {
+    const maxQty = getMaxQuantity();
+    if (maxQty === 0) {
+      return t('outOfStock') || 'Out of Stock';
+    } else if (maxQty <= 5) {
+      return `${t('only')} ${maxQty} ${t('left')}` || `Only ${maxQty} left`;
+    } else {
+      return `${t('inStock')} ${maxQty}` || `In Stock: ${maxQty}`;
+    }
+  };
+
+  // Calculate total price for selected quantity
+  const calculateTotalPrice = (quantity) => {
+    const currentPrice = singleproduct?.variationname ? dynamicprice : singleproduct.price;
+    return (currentPrice * quantity).toFixed(2);
+  };
+
   const RateProduct = async (ratingnum,comment) => {
     if(ratingnum == '') {
       AlertHelper.show('error', t('pleaseenterrating'));
@@ -157,6 +189,9 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     setSelecoptionpoint(pitem.totalpoints);
     setSelecoptionqty(pitem.qty);
     setSelecoptionweig('');
+    
+    // Reset quantity to 1 when loading new product or clearing variations
+    setBuyqty(1);
     if(pitem.qty == 0) {
       setOutofstock(true);
     }else {
@@ -328,6 +363,9 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     setSelecoptionqty(selectedItem.vqty);
     setSelecoptionweig(selectedItem.vweight);
 
+    // Reset quantity to 1 when changing variation/flavor
+    setBuyqty(1);
+
     setVarqtyn(selectedItem.vqty);
     if(selectedItem.vqty == 0) {
       setOutofstock(true);
@@ -393,6 +431,9 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     setSelecoptionweig(selectedItem.sweight);
     setSelsizeindex((selectedItem.sweight).toLowerCase().replace(/\s+/g, ''))
     setSizeslected(true);
+
+    // Reset quantity to 1 when changing size option
+    setBuyqty(1);
 
   }
 
@@ -462,6 +503,11 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     }
     if(singleproduct.variation && selecoptionname == '') {
       AlertHelper.show('error', t('select')+' '+singleproduct.variationname);
+      // Auto-scroll to flavor selector after showing error
+      setTimeout(() => {
+        scrollToFlavorSelector();
+      }, 500); // Small delay to ensure error message is visible
+      return;
     }else {
       if(issizeshow) {
         if(!sizeslected) {
@@ -494,6 +540,31 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
       }
     }
   }
+  // Helper function to scroll to flavor selector
+  const scrollToFlavorSelector = () => {
+    if (flavorSelectorRef.current && scrollViewRef.current) {
+      flavorSelectorRef.current.measureLayout(
+        scrollViewRef.current,
+        (x, y) => {
+          // Scroll to the flavor selector and center it on screen
+          const screenHeight = Dimensions.get('window').height;
+          const scrollPosition = Math.max(0, y - (screenHeight / 2));
+          scrollViewRef.current.scrollTo({
+            y: scrollPosition,
+            animated: true,
+          });
+        },
+        () => {
+          // Fallback: scroll to a reasonable position
+          scrollViewRef.current.scrollTo({
+            y: 400,
+            animated: true,
+          });
+        }
+      );
+    }
+  };
+
   const buyNow = () => {
     if(Number(buyqty) <= 0) {
       AlertHelper.show('error', t('selectquantity'));
@@ -501,6 +572,11 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     }
     if(singleproduct.variation && selecoptionname == '') {
       AlertHelper.show('error', 'Select '+singleproduct.variationname);
+      // Auto-scroll to flavor selector after showing error
+      setTimeout(() => {
+        scrollToFlavorSelector();
+      }, 500); // Small delay to ensure error message is visible
+      return;
     }else {
       if(issizeshow) {
         if(!sizeslected) {
@@ -861,46 +937,72 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
                     justifyContent: 'space-between',
                     alignItems: 'center',
                   }}>
-                  <View>
-                    <Label text={t('quantity')} style={{fontSize: scale(15)}} />
-                  </View>
-                  <View>
-                    <SimpleStepper
-                    containerStyle={{
-                      backgroundColor: appColors.white,
-                      flexDirection: 'row',
-                      borderRadius: scale(5),
-                      overflow: 'hidden',
-                      alignItems: 'center',
-                      //paddingHorizontal: scale(10),
-                      height: scale(45),
-                    }}
-                    minimumValue={1}
-                    maximumValue={singleproduct.qty}
-                    initialValue={buyqty}
-                    showText={true}
-                    renderText={() => <Label style={{paddingHorizontal: scale(10)}} text={buyqty} />}
-                    incrementStepStyle={{padding: scale(10), opacity: scale(0.4)}}
-                    decrementStepStyle={{padding: scale(10), opacity: scale(0.4)}}
-                    incrementImageStyle={{height: scale(20), width: scale(20)}}
-                    decrementImageStyle={{height: scale(20), width: scale(20)}}
-                    onIncrement={value => byeqtycondition(value)}
-                    onDecrement={value => setBuyqty(value)}
-                    />
+                  <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+                    {/* Stock Information - Above "Select Quantity" */}
+                    <View style={{marginBottom: scale(5), alignItems: 'flex-start'}}>
+                      <Label 
+                        text={getStockInfo()} 
+                        style={{
+                          fontSize: scale(10),
+                          fontWeight: '400',
+                          color: getMaxQuantity() === 0 ? '#FF0000' : getMaxQuantity() <= 5 ? '#FF6B00' : appColors.gray,
+                          textAlign: 'left',
+                        }} 
+                      />
+                    </View>
+                    
+                    {/* Select Quantity and Selector on same horizontal line */}
+                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+                      <Label text="Select Quantity" style={{fontSize: scale(15)}} />
+                      
+                      {/* Quantity Selector - 50% bigger with same horizontal padding as buttons */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          setQuantityModalType('regular');
+                          setShowQuantityModal(true);
+                        }}
+                        style={{
+                          backgroundColor: appColors.lightGray,
+                          borderRadius: scale(6), // 50% bigger from 4 to 6
+                          paddingHorizontal: scale(10.5), // 50% bigger from 7 to 10.5
+                          paddingVertical: scale(4.5), // 50% bigger from 3 to 4.5
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          minWidth: scale(39), // 50% bigger from 26 to 39
+                          width: scale(57), // 50% bigger from 38 to 57
+                          marginRight: scale(12), // Same horizontal padding as Container (scale(12))
+                        }}
+                      >
+                        <Label 
+                          text={buyqty.toString()} 
+                          style={{
+                            fontSize: scale(16.5), // 50% bigger from 11 to 16.5
+                            fontWeight: '500',
+                            color: appColors.black,
+                          }} 
+                        />
+                        <MaterialCommunityIcons
+                          name="chevron-down"
+                          size={scale(18)} // 50% bigger from 12 to 18
+                          color={appColors.black}
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View> )}
              </View>
-             <View>
+                          <View>
                { singleproduct.variation && (
-                 <View>
+                 <View ref={flavorSelectorRef}>
                    {i18n.language == 'en' ? (
                      <Label
                        text={t('select')+' '+singleproduct.variationname}
                        style={{fontWeight: '700', fontSize: scale(20), marginBottom:10}}
                      /> ) : (
-                       <Label
-                         text={t('select')+'  '+singleproduct.variationcname}
-                         style={{fontWeight: '700', fontSize: scale(20), marginBottom:10}}
+                     <Label
+                       text={t('select')+'  '+singleproduct.variationcname}
+                       style={{fontWeight: '700', fontSize: scale(20), marginBottom:10}}
                        /> )}
                    <SelectDropdown
                       data={voptiond}
@@ -999,33 +1101,60 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
                         justifyContent: 'space-between',
                         alignItems: 'center',
                       }}>
-                      <View>
-                        <Label text={t('quantity')} style={{fontSize: scale(15)}} />
-                      </View>
-                      <View>
-                        <SimpleStepper
-                        containerStyle={{
-                          backgroundColor: appColors.white,
-                          flexDirection: 'row',
-                          borderRadius: scale(5),
-                          overflow: 'hidden',
-                          alignItems: 'center',
-                          //paddingHorizontal: scale(10),
-                          height: scale(45),
-                        }}
-                        minimumValue={1}
-                        maximumValue={selecoptionqty}
-                        initialValue={buyqty}
-                        showText={true}
-                        renderText={() => <Label style={{paddingHorizontal: scale(10)}} text={buyqty} />}
-                        incrementStepStyle={{padding: scale(10), opacity: scale(0.4)}}
-                        decrementStepStyle={{padding: scale(10), opacity: scale(0.4)}}
-                        incrementImageStyle={{height: scale(20), width: scale(20)}}
-                        decrementImageStyle={{height: scale(20), width: scale(20)}}
-                        onIncrement={value => byeqtycondition(value)}
-                        onDecrement={value => setBuyqty(value)}
-                        disabled={!selecoptionid}
-                        />
+                      <View style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+                        {/* Stock Information - Above "Select Quantity" */}
+                        <View style={{marginBottom: scale(5), alignItems: 'flex-start'}}>
+                          <Label 
+                            text={getStockInfo()} 
+                            style={{
+                              fontSize: scale(10),
+                              fontWeight: '400',
+                              color: getMaxQuantity() === 0 ? '#FF0000' : getMaxQuantity() <= 5 ? '#FF6B00' : appColors.gray,
+                              textAlign: 'left',
+                            }} 
+                          />
+                        </View>
+                        
+                        {/* Select Quantity and Selector on same horizontal line */}
+                        <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+                          <Label text="Select Quantity" style={{fontSize: scale(15)}} />
+                          
+                          {/* Quantity Selector - 50% bigger with same horizontal padding as buttons */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              setQuantityModalType('variation');
+                              setShowQuantityModal(true);
+                            }}
+                            style={{
+                              backgroundColor: appColors.lightGray,
+                              borderRadius: scale(6), // 50% bigger from 4 to 6
+                              paddingHorizontal: scale(10.5), // 50% bigger from 7 to 10.5
+                              paddingVertical: scale(4.5), // 50% bigger from 3 to 4.5
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              minWidth: scale(39), // 50% bigger from 26 to 39
+                              width: scale(57), // 50% bigger from 38 to 57
+                              marginRight: scale(12), // Same horizontal padding as Container (scale(12))
+                              opacity: !selecoptionid ? 0.5 : 1,
+                            }}
+                            disabled={!selecoptionid}
+                          >
+                            <Label 
+                              text={buyqty.toString()} 
+                              style={{
+                                fontSize: scale(16.5), // 50% bigger from 11 to 16.5
+                                fontWeight: '500',
+                                color: appColors.black,
+                              }} 
+                            />
+                            <MaterialCommunityIcons
+                              name="chevron-down"
+                              size={scale(18)} // 50% bigger from 12 to 18
+                              color={appColors.black}
+                            />
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </View>
                </View> )}
@@ -1226,6 +1355,102 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
         </ScrollView>
         {_renderGotop()}
         {_renderBottom()}
+
+        {/* Quantity Selection Modal */}
+        <Modal
+          visible={showQuantityModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowQuantityModal(false)}
+        >
+          <View style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <View style={{
+              backgroundColor: 'white',
+              borderRadius: scale(10),
+              padding: scale(20),
+              minWidth: scale(250),
+              maxHeight: scale(400),
+            }}>
+              <Label 
+                text={t('selectQuantity')} 
+                style={{
+                  fontSize: scale(16),
+                  fontWeight: '600',
+                  marginBottom: scale(15),
+                  textAlign: 'center',
+                }}
+              />
+              <FlatList
+                data={Array.from({length: getMaxQuantity()}, (_, i) => i + 1)}
+                keyExtractor={(item) => item.toString()}
+                renderItem={({item: qty}) => (
+                  <TouchableOpacity
+                    style={[
+                      {
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        padding: scale(15),
+                        borderBottomWidth: 1,
+                        borderBottomColor: appColors.lightGray,
+                      },
+                      buyqty === qty && {
+                        backgroundColor: appColors.lightGray,
+                        borderRadius: scale(5),
+                      }
+                    ]}
+                    onPress={() => {
+                      setBuyqty(qty);
+                      setShowQuantityModal(false);
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Label
+                        text={`Qty: ${qty}`}
+                        style={{
+                          fontSize: scale(14),
+                          color: appColors.black,
+                          fontWeight: buyqty === qty ? '600' : '400',
+                        }}
+                      />
+                      <Label
+                        text={`${APP_CURRENY.symbol} ${calculateTotalPrice(qty)}`}
+                        style={{
+                          fontSize: scale(12),
+                          color: appColors.gray,
+                          marginTop: scale(2),
+                        }}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
+              <TouchableOpacity
+                style={{
+                  backgroundColor: appColors.primary,
+                  padding: scale(12),
+                  borderRadius: scale(5),
+                  marginTop: scale(15),
+                  alignItems: 'center',
+                }}
+                onPress={() => setShowQuantityModal(false)}
+              >
+                <Label 
+                  text="Cancel" 
+                  style={{
+                    fontSize: scale(14),
+                    color: appColors.white,
+                    fontWeight: '500',
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </>
     )}
 

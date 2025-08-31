@@ -86,6 +86,7 @@
   "devDependencies": {
     "@babel/core": "^7.11.4",
     "@babel/runtime": "^7.11.2",
+    "@react-native-community/cli": "^20.0.1",
     "@react-native-community/eslint-config": "^2.0.0",
     "@react-native/js-polyfills": "^0.74.0",
     "@react-native/metro-babel-transformer": "^0.73.15",

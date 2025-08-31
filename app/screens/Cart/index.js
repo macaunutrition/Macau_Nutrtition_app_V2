@@ -24,6 +24,12 @@ import "../../translation";
 function index({wishList:{wishItemNames},removeToWishList$, addToWishList$,removeFromCart$,cart:{cartItems} ,navigation}) {
 const { t, i18n } = useTranslation();
 const dispatch = useDispatch();
+
+// Visual scroll indicator state
+const [scrollProgress, setScrollProgress] = useState(0);
+const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+const listRef = useRef(null);
+
  const getAmount = ()=>{
    let amount =0
    cartItems?.map(item=>{
@@ -89,6 +95,31 @@ const dispatch = useDispatch();
   //  console.warn(item);
     return ( <CheckOutItem item={item} navigation={navigation} itemid={id} name={name} image={images[0]} price={price} quantity={quantity} /> );
   };
+
+ const handleContinueShopping = () => {
+   // Try to go back to previous screen, if not possible go to Home
+   if (navigation.canGoBack()) {
+     navigation.goBack();
+   } else {
+     navigation.navigate('Home');
+   }
+ }
+
+ // Visual scroll indicator function
+ const handleScroll = (event) => {
+   const offsetY = event.nativeEvent.contentOffset.y;
+   const contentHeight = event.nativeEvent.contentSize.height;
+   const layoutHeight = event.nativeEvent.layoutMeasurement.height;
+   
+   // Calculate scroll progress (0 to 1)
+   const maxScroll = Math.max(0, contentHeight - layoutHeight);
+   const progress = maxScroll > 0 ? offsetY / maxScroll : 0;
+   setScrollProgress(progress);
+   
+   // Show indicator if there's scrollable content
+   setShowScrollIndicator(contentHeight > layoutHeight);
+ };
+
   return (
     <>
       <Container >

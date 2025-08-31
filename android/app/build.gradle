@@ -1,3 +1,4 @@
+// Temporarily exclude async-storage to fix build
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 apply plugin: 'com.google.gms.google-services' // <- Add this line

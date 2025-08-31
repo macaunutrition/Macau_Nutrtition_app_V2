@@ -193,13 +193,13 @@ const truncateText = (text,limit) => {
           right: scale(5),
           zIndex: 10,
           backgroundColor: 'rgba(0,0,0,0.1)',
-          borderRadius: scale(15),
-          padding: scale(3.5), // Reduced by 30% from 5 to 3.5
+          borderRadius: scale(16.5), // Increased by 10% from 15 to 16.5
+          padding: scale(3.85), // Increased by 10% from 3.5 to 3.85
         }}
       >
         <MaterialCommunityIcons
           name="delete"
-          size={scale(14)} // Reduced by 30% from 20 to 14
+          size={scale(15.4)} // Increased by 10% from 14 to 15.4
           color={appColors.black}
         />
       </TouchableOpacity>
@@ -314,8 +314,8 @@ const truncateText = (text,limit) => {
         }}>
         <>
         {i18n.language == 'en' ? (
-          <Label text={truncateText(item.name,15)} style={{fontWeight: '600' ,}} />) : (
-            <Label text={truncateText(item.cname,10)} style={{fontWeight: '600' ,}} /> )}
+          <Label text={truncateText(item.name,18)} style={{fontWeight: '600' ,}} />) : (
+            <Label text={truncateText(item.cname,18)} style={{fontWeight: '600' ,}} /> )}
         </>
 
         { !item.variationname  && (
@@ -358,7 +358,7 @@ const truncateText = (text,limit) => {
             <Label
               text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
               style={{
-                fontSize: scale(16),
+                fontSize: scale(14), // Increased from 12 to 14 for better readability
                 fontWeight: '600',
                 color: appColors.primaryDark,
               }}
@@ -409,7 +409,7 @@ const truncateText = (text,limit) => {
                      <Label
                        text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                        style={{
-                         fontSize: scale(16),
+                         fontSize: scale(12), // Reduced from 16 to 12 for more compact layout
                          fontWeight: '600',
                          color: appColors.primaryDark,
                        }}
@@ -455,7 +455,7 @@ const truncateText = (text,limit) => {
                      <Label
                        text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                        style={{
-                         fontSize: scale(16),
+                         fontSize: scale(14), // Increased from 12 to 14 for better readability
                          fontWeight: '600',
                          color: appColors.primaryDark,
                        }}
@@ -503,7 +503,7 @@ const truncateText = (text,limit) => {
                  <Label
                    text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                    style={{
-                     fontSize: scale(16),
+                     fontSize: scale(14), // Increased from 12 to 14 for better readability
                      fontWeight: '600',
                      color: appColors.primaryDark,
                    }}
@@ -601,14 +601,15 @@ const truncateText = (text,limit) => {
                   style={{
                     backgroundColor: appColors.lightGray,
                     borderRadius: scale(4), // Reduced by 15% from 5 to 4
-                    paddingHorizontal: scale(7), // Reduced by 15% from 8 to 7
+                    paddingHorizontal: scale(4), // Reduced from 7 to 4
                     paddingVertical: scale(3), // Reduced by 15% from 4 to 3
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     minWidth: scale(26), // Reduced by 15% from 30 to 26
-                    width: scale(38), // Reduced by 15% from 45 to 38
-                    marginTop: scale(15), // Move down to align with "Quantity" word
+                    width: scale(40), // Increased from 38 to 40
+                    marginTop: scale(18), // Increased from 15 to 18 for better spacing
+                    marginLeft: scale(2), // Move selector 2px to the right
                   }}
                 >
                   <Label 

@@ -131,3 +131,4 @@ if (__DEV__) {
     performanceTest.runAllTests();
   }, 3000);
 }
+

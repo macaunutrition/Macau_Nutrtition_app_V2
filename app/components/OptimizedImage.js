@@ -128,3 +128,4 @@ export const clearImageCache = () => {
 };
 
 export default OptimizedImage;
+

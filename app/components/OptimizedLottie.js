@@ -129,3 +129,4 @@ export const useLottieManager = () => {
 };
 
 export default OptimizedLottie;
+

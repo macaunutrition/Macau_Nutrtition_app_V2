@@ -4,6 +4,7 @@ import {scale} from 'react-native-size-matters';
 import {AlertHelper} from '../../utils/AlertHelper';
 import Container from '../../components/Container';
 import Label from '../../components/Label';
+import CustomButton from '../../components/CustomButton';
 import {appColors} from '../../utils/appColors';
 import SimpleStepper from 'react-native-simple-stepper';
 import {bestSellersList} from '../../utils/MockData';
@@ -123,12 +124,12 @@ const listRef = useRef(null);
   return (
     <>
       <Container >
-        <View style={{flex: 1, paddingVertical: scale(30)}}>
+        <View style={{flex: 1, paddingVertical: scale(8)}}>
           <SwipeListView
           ListEmptyComponent={()=> <Empty  label={t('yourcartisempty')}/> }
           showsVerticalScrollIndicator={false}
             keyExtractor={(item) => `${item.id}}`}
-            ItemSeparatorComponent={() => <View style={{padding: scale(10)}} />}
+            ItemSeparatorComponent={() => <View style={{padding: scale(4)}} />}
             data={cartItems || []}
             renderItem={({item, index}) => <ItemCard item={item} />}
             renderHiddenItem={(data, rowMap) => (
@@ -178,8 +179,78 @@ const listRef = useRef(null);
           />
         </View>
       </Container>
-      <View style={{backgroundColor: 'red', bottom: scale(-15)}}>
-        <BottomButtons onPress={()=> CheckEmptyCart() } buttonLabel={t('checkout')} count={t('items')+': '+cartCount()} price={getAmount()} />
+      <View style={{backgroundColor: appColors.white, bottom: scale(-4), paddingHorizontal: scale(20), paddingVertical: scale(4)}}>
+        {/* Price and Items Info */}
+        <View style={{marginBottom: scale(2)}}>
+          <Label
+            text="TOTAL"
+            style={{
+              fontSize: scale(14),
+              opacity: scale(0.4),
+              letterSpacing: scale(2),
+            }}
+          />
+          <Label
+            text={t('items')+': '+cartCount()}
+            style={{
+              fontSize: scale(12),
+              letterSpacing: scale(2),
+              marginTop: scale(2),
+            }}
+          />
+          <Label
+            text={getAmount()}
+            style={{
+              fontSize: scale(16),
+              fontWeight: '800',
+              color: appColors.primaryDark,
+              marginTop: scale(2),
+            }}
+          />
+        </View>
+        
+        {/* Dual Button Layout */}
+        <View style={{
+          flexDirection: 'row', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          paddingHorizontal: scale(20),
+        }}>
+          {/* Continue Shopping Button */}
+          <CustomButton 
+            style={{
+              width: scale(150),
+              height: scale(40),
+              backgroundColor: appColors.lightGray,
+              borderWidth: 1,
+              borderColor: appColors.primaryDark,
+              paddingVertical: scale(3),
+              paddingHorizontal: scale(8),
+              marginRight: scale(10), // 10px space between buttons
+            }}
+            labelStyle={{
+              color: appColors.black,
+              fontSize: scale(12),
+              fontWeight: '300',
+              textAlign: 'center',
+            }}
+            onPress={handleContinueShopping} 
+            label="CONTINUE SHOPPING"
+          />
+          
+          {/* Checkout Button */}
+          <CustomButton 
+            style={{
+              width: scale(150),
+              height: scale(40),
+              paddingVertical: scale(3),
+              paddingHorizontal: scale(8),
+              marginLeft: scale(10), // 10px space between buttons
+            }} 
+            onPress={()=> CheckEmptyCart()} 
+            label={t('checkout')} 
+          />
+        </View>
       </View>
     </>
   );

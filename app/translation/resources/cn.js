@@ -181,4 +181,5 @@ export default {
   mobilenumberisrequired: '需要手機號碼！',
   codesent: '代碼已發送至您的手機號碼',
   waitingforpayment: '等待付款確認。請勿關閉應用程式。',
+  continueshopping: '繼續購物',
 };

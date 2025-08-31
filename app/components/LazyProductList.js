@@ -132,3 +132,4 @@ const LazyProductList = ({
 };
 
 export default LazyProductList;
+

@@ -183,4 +183,5 @@ export default {
  mobilenumberisrequired: 'Mobile number is required',
  codesent: 'Code sent to your mobile number',
  waitingforpayment: 'Waiting for payment confirmation. Do not close the app.',
+ continueshopping: 'Continue Shopping',
 };

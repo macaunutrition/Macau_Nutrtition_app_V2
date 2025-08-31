@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {View, Text, Pressable, Image, StyleSheet,TouchableOpacity} from 'react-native';
 import LottieView from 'lottie-react-native';
+import FastImage from 'react-native-fast-image';
 import {scale} from 'react-native-size-matters';
 import {appColors} from '../utils/appColors';
 import Feather from 'react-native-vector-icons/Feather';
@@ -17,7 +18,6 @@ import moment from 'moment';
 import { firebase } from '@react-native-firebase/analytics';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import FastImage from 'react-native-fast-image';
 const placeholder = require('../static/images/default-placeholder.png');
 
 export default function ProductCard({ cartItems, navigation, item, onImageLoad = () => {} }) {
@@ -110,7 +110,11 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
            width: '100%',
           //backgroundColor:appColors.lightGray
         }}>
-        <Pressable style={{position: 'relative', zIndex: -1}} onPress={() => navigation.navigate('ProductDetails',{pid: id})} >
+        <Pressable style={{position: 'relative', zIndex: -1}} onPress={() => {
+          console.log('ProductCard: Navigating to ProductDetails with pid:', id);
+          console.log('ProductCard: Full item data:', item);
+          navigation.navigate('ProductDetails',{pid: id});
+        }} >
           <FastImage
             style={{ height: height, width: '100%', position: 'relative', zIndex: 1 }}
             source={imgSource}
@@ -159,7 +163,7 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
         <Pressable onPress={() => navigation.navigate('ProductDetails',{pid: id})} ><View style={{paddingVertical: scale(3)}}>
           <Label text={name?.substring(0,40)} style={{fontSize: scale(13), fontWeight: '500'}} />
         </View></Pressable> ) : (
-          <Pressable onPress={() => navigation.navigate('ProductDetails',{item})} ><View style={{paddingVertical: scale(3)}}>
+          <Pressable onPress={() => navigation.navigate('ProductDetails',{pid: id})} ><View style={{paddingVertical: scale(3)}}>
             <Label text={cname?.substring(0,40)} style={{fontSize: scale(13), fontWeight: '500'}} />
           </View></Pressable> )}
 

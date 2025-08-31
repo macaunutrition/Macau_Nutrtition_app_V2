@@ -44,6 +44,10 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
   const { pid } = params;
+  
+  // Debug logging
+  console.log('ProductDetails: Component mounted with params:', params);
+  console.log('ProductDetails: pid extracted:', pid);
   const [singleproduct, setSingleproduct] = useState([]);
   const [productimages, setProductimages] = useState([]);
   const [voptiond, setVoptiond] = useState([]);
@@ -88,20 +92,36 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [quantityModalType, setQuantityModalType] = useState('regular'); // 'regular' or 'variation'
   const loadAllratings = async () => {
-    const ratings = await getRatings(pid);
-    setAllratings(ratings);
+    try {
+      const ratings = await getRatings(pid);
+      setAllratings(ratings);
+    } catch (error) {
+      console.log('ProductDetails: Error loading ratings (non-critical):', error);
+      setAllratings(null); // Default to null if error
+    }
   }
   const loadUserBoughtProduct = async () => {
-    const usermobile = await AsyncStorage.getItem('user');
-    const userBoughtProduct = await checkUserBoughtProduct(pid, usermobile);
-    setUserBoughtProduct(userBoughtProduct);
+    try {
+      const usermobile = await AsyncStorage.getItem('user');
+      const userBoughtProduct = await checkUserBoughtProduct(pid, usermobile);
+      setUserBoughtProduct(userBoughtProduct);
+    } catch (error) {
+      console.log('ProductDetails: Error checking user purchase (non-critical):', error);
+      setUserBoughtProduct(false); // Default to false if error
+    }
   }
   const loadUserRated = async () => {
-    const usermobile = await AsyncStorage.getItem('user');
-    const userRated = await checkUserRated(pid, usermobile);
-    if(userRated) {
-      setMyRating(userRated.rating);
-      setMyReview(userRated.comment);
+    try {
+      const usermobile = await AsyncStorage.getItem('user');
+      const userRated = await checkUserRated(pid, usermobile);
+      if(userRated) {
+        setMyRating(userRated.rating);
+        setMyReview(userRated.comment);
+      }
+    } catch (error) {
+      console.log('ProductDetails: Error loading user rating (non-critical):', error);
+      setMyRating('');
+      setMyReview('');
     }
   }
 
@@ -165,16 +185,39 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     setSelectedsizeoption(Object);
 
     setIsLoading(true);
-    if(wishItemNames?.includes(pid)) {
-      setIsInWishlist(true);
-    }else {
-      setIsInWishlist(false);
+    
+    // Add error handling for navigation
+    if (!pid) {
+      console.error('ProductDetails: No pid provided in navigation params');
+      AlertHelper.show('error', 'Product not found');
+      navigation.goBack();
+      return;
     }
-    const product = await getData('products',pid);
-    let pitem = product.data();
-    pitem.pid = pid;
-    pitem.id = pid;
-    setSingleproduct(pitem);
+    
+    try {
+      if(wishItemNames?.includes(pid)) {
+        setIsInWishlist(true);
+      }else {
+        setIsInWishlist(false);
+      }
+      
+      console.log('ProductDetails: Fetching product data for pid:', pid);
+      const product = await getData('products',pid);
+      console.log('ProductDetails: Product fetch result:', product);
+      
+      if (!product || !product.data()) {
+        console.error('ProductDetails: Product data not found for pid:', pid);
+        AlertHelper.show('error', 'Product not found');
+        navigation.goBack();
+        return;
+      }
+      
+      let pitem = product.data();
+      console.log('ProductDetails: Product item data:', pitem);
+      pitem.pid = pid;
+      pitem.id = pid;
+      setSingleproduct(pitem);
+      console.log('ProductDetails: Product set successfully:', pitem.name);
     setVoptiond([]);
     setSelecoptionall({});
     setOpselected(false);
@@ -254,12 +297,19 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
     setSlides(flattenedSlides);
 
       setIsLoading(false);
+      
+    } catch (error) {
+      console.error('ProductDetails: Error loading product data:', error);
+      AlertHelper.show('error', 'Failed to load product details');
+      setIsLoading(false);
+      navigation.goBack();
+    }
   }
   //console.warn(wishItemNames);
   const shareProduct = async () => {
     const url = `https://macaunutrition.com/productdetails/${singleproduct.pid}`;
     const options = {
-     message: `Macau Nutrition: ${singleproduct.name}\nCheck out the product here: ${url}`,
+     message: `Macau Nutrition: ${singleproduct?.name || 'Product'}\nCheck out the product here: ${url}`,
     };
     try {
       await Share.open(options);
@@ -748,7 +798,13 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
   };
   const nativeAdViewRef = useRef();
   const addanalytics = async () => {
-    await firebase.analytics().setCurrentScreen(singleproduct.name);
+    try {
+      if (singleproduct?.name) {
+        await firebase.analytics().setCurrentScreen(singleproduct.name);
+      }
+    } catch (error) {
+      console.log('ProductDetails: Error setting analytics screen (non-critical):', error);
+    }
   }
   const gotToRatingView = () => {
     if (ratingViewRef.current) {
@@ -790,11 +846,23 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
   
   useEffect( () => {
     loadSIngleproducts();
+    // Re-enable rating functions with proper error handling
     loadUserBoughtProduct();
     loadUserRated();
     loadAllratings();
     addanalytics();
   }, [params]);
+  // Safety check: Don't render if we don't have basic product data
+  if (!singleproduct || Object.keys(singleproduct).length === 0) {
+    return (
+      <Container>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Label text="Loading product..." style={{fontSize: scale(16)}} />
+        </View>
+      </Container>
+    );
+  }
+
   return (
     <>
     {isLoading ? (
@@ -835,13 +903,13 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
           {i18n.language == 'en' ? (
             <View style={{paddingVertical: scale(10),paddingHorizontal: scale(20)}}>
               <Label
-                text={singleproduct.name}
+                text={singleproduct?.name || 'Product Name'}
                 style={{fontWeight: '700', fontSize: scale(18)}}
               />
             </View> ) : (
               <View style={{paddingVertical: scale(10),paddingHorizontal: scale(20)}}>
                 <Label
-                  text={singleproduct.cname}
+                  text={singleproduct?.cname || 'Product Name'}
                   style={{fontWeight: '700', fontSize: scale(18)}}
                 />
               </View> )}
@@ -891,10 +959,33 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
 
             </View>
              <View style={{paddingVertical: 20}}>
-               <Label
-                 text={APP_CURRENY.symbol+' '+dynamicprice}
-                 style={{fontWeight: '700', fontSize: scale(20),color:appColors.primaryDark}}
-               />
+               {singleproduct?.sellprice > 0 ? (
+                 <View>
+                   {/* Original price - crossed out in green */}
+                   <Label
+                     text={APP_CURRENY.symbol+' '+singleproduct.price}
+                     style={{
+                       fontWeight: '500', 
+                       fontSize: scale(16),
+                       color: appColors.primaryDark,
+                       textDecorationLine: 'line-through',
+                       textDecorationStyle: 'solid',
+                       textDecorationColor: appColors.primaryDark,
+                     }}
+                   />
+                   {/* Promotional price - red color */}
+                   <Label
+                     text={APP_CURRENY.symbol+' '+dynamicprice}
+                     style={{fontWeight: '700', fontSize: scale(20), color: appColors.red}}
+                   />
+                 </View>
+               ) : (
+                 /* Regular price - green */
+                 <Label
+                   text={APP_CURRENY.symbol+' '+dynamicprice}
+                   style={{fontWeight: '700', fontSize: scale(20),color:appColors.primaryDark}}
+                 />
+               )}
                <TouchableOpacity onPress={() => gotToRatingView()} style={{alignSelf:'flex-start',marginTop: scale(10)}}>
                 {allratings && allratings.averageRating > 0 && (
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -1283,18 +1374,18 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
                     </View>
                   </View>
                   )}
-                  {allratings && allratings.ratings.length > 0 && (
+                  {allratings && allratings.ratings && allratings.ratings.length > 0 && (
                     <View>
                       {allratings.ratings.map((rating, index) => (
                         <View key={index} style={styles.ratingItem}>
                           <View style={styles.ratingHeader}>
-                            <Text style={styles.ratingStars}>{rating.rating}★</Text>
-                            <Text style={styles.ratingTitle}>{rating.title}</Text>
+                            <Text style={styles.ratingStars}>{rating?.rating || 0}★</Text>
+                            <Text style={styles.ratingTitle}>{rating?.title || ''}</Text>
                           </View>
-                          <Text style={styles.ratingComment}>{rating.comment}</Text>
+                          <Text style={styles.ratingComment}>{rating?.comment || ''}</Text>
                           <View style={styles.ratingFooter}>
-                            <Text style={styles.ratingUser}>{rating.user.name},</Text>
-                            <Text style={styles.ratingDate}>{rating.date}</Text>
+                            <Text style={styles.ratingUser}>{rating?.user?.name || 'Anonymous'},</Text>
+                            <Text style={styles.ratingDate}>{rating?.date || ''}</Text>
                           </View>
                         </View>
                       ))}

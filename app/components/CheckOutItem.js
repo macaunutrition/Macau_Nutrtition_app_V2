@@ -320,14 +320,41 @@ const truncateText = (text,limit) => {
 
         { !item.variationname  && (
           <View>
-            <Label
-              text={`${APP_CURRENY.symbol} ${item.price} each`}
-              style={{
-                fontSize: scale(12),
-                fontWeight: '400',
-                color: appColors.gray,
-              }}
-            />
+            {item.sellprice > 0 ? (
+              <View>
+                {/* Original price - crossed out in green */}
+                <Label
+                  text={`${APP_CURRENY.symbol} ${item.price} each`}
+                  style={{
+                    fontSize: scale(11),
+                    fontWeight: '400',
+                    color: appColors.primaryDark,
+                    textDecorationLine: 'line-through',
+                    textDecorationStyle: 'solid',
+                    textDecorationColor: appColors.primaryDark,
+                  }}
+                />
+                {/* Promotional price - red color */}
+                <Label
+                  text={`${APP_CURRENY.symbol} ${item.sellprice} each`}
+                  style={{
+                    fontSize: scale(12),
+                    fontWeight: '500',
+                    color: appColors.red,
+                  }}
+                />
+              </View>
+            ) : (
+              /* Regular price - green */
+              <Label
+                text={`${APP_CURRENY.symbol} ${item.price} each`}
+                style={{
+                  fontSize: scale(12),
+                  fontWeight: '400',
+                  color: appColors.gray,
+                }}
+              />
+            )}
             <Label
               text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
               style={{
@@ -344,14 +371,41 @@ const truncateText = (text,limit) => {
               <>
                                   {item.sizedetails.sprice != null ? (
                    <View>
-                     <Label
-                       text={`${APP_CURRENY.symbol} ${item.sizedetails.sprice} each`}
-                       style={{
-                         fontSize: scale(12),
-                         fontWeight: '400',
-                         color: appColors.gray,
-                       }}
-                     />
+                     {item.sellprice > 0 ? (
+                       <View>
+                         {/* Original price - crossed out in green */}
+                         <Label
+                           text={`${APP_CURRENY.symbol} ${item.vprice} each`}
+                           style={{
+                             fontSize: scale(11),
+                             fontWeight: '400',
+                             color: appColors.primaryDark,
+                             textDecorationLine: 'line-through',
+                             textDecorationStyle: 'solid',
+                             textDecorationColor: appColors.primaryDark,
+                           }}
+                         />
+                         {/* Promotional price - red color */}
+                         <Label
+                           text={`${APP_CURRENY.symbol} ${item.sizedetails.sprice} each`}
+                           style={{
+                             fontSize: scale(12),
+                             fontWeight: '500',
+                             color: appColors.red,
+                           }}
+                         />
+                       </View>
+                     ) : (
+                       /* Regular price - green */
+                       <Label
+                         text={`${APP_CURRENY.symbol} ${item.sizedetails.sprice} each`}
+                         style={{
+                           fontSize: scale(12),
+                           fontWeight: '400',
+                           color: appColors.gray,
+                         }}
+                       />
+                     )}
                      <Label
                        text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                        style={{
@@ -363,14 +417,41 @@ const truncateText = (text,limit) => {
                    </View>
                   ) : (
                    <View>
-                     <Label
-                       text={`${APP_CURRENY.symbol} ${item.vprice} each`}
-                       style={{
-                         fontSize: scale(12),
-                         fontWeight: '400',
-                         color: appColors.gray,
-                       }}
-                     />
+                     {item.sellprice > 0 ? (
+                       <View>
+                         {/* Original price - crossed out in green */}
+                         <Label
+                           text={`${APP_CURRENY.symbol} ${item.price} each`}
+                           style={{
+                             fontSize: scale(11),
+                             fontWeight: '400',
+                             color: appColors.primaryDark,
+                             textDecorationLine: 'line-through',
+                             textDecorationStyle: 'solid',
+                             textDecorationColor: appColors.primaryDark,
+                           }}
+                         />
+                         {/* Promotional price - red color */}
+                         <Label
+                           text={`${APP_CURRENY.symbol} ${item.vprice} each`}
+                           style={{
+                             fontSize: scale(12),
+                             fontWeight: '500',
+                             color: appColors.red,
+                           }}
+                         />
+                       </View>
+                     ) : (
+                       /* Regular price - green */
+                       <Label
+                         text={`${APP_CURRENY.symbol} ${item.vprice} each`}
+                         style={{
+                           fontSize: scale(12),
+                           fontWeight: '400',
+                           color: appColors.gray,
+                         }}
+                       />
+                     )}
                      <Label
                        text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                        style={{
@@ -384,14 +465,41 @@ const truncateText = (text,limit) => {
                 </>
               ) : (
                <View>
-                 <Label
-                   text={`${APP_CURRENY.symbol} ${item.vprice} each`}
-                   style={{
-                     fontSize: scale(12),
-                     fontWeight: '400',
-                     color: appColors.gray,
-                   }}
-                 />
+                 {item.sellprice > 0 ? (
+                   <View>
+                     {/* Original price - crossed out in green */}
+                     <Label
+                       text={`${APP_CURRENY.symbol} ${item.price} each`}
+                       style={{
+                         fontSize: scale(11),
+                         fontWeight: '400',
+                         color: appColors.primaryDark,
+                         textDecorationLine: 'line-through',
+                         textDecorationStyle: 'solid',
+                         textDecorationColor: appColors.primaryDark,
+                       }}
+                     />
+                     {/* Promotional price - red color */}
+                     <Label
+                       text={`${APP_CURRENY.symbol} ${item.vprice} each`}
+                       style={{
+                         fontSize: scale(12),
+                         fontWeight: '500',
+                         color: appColors.red,
+                       }}
+                     />
+                   </View>
+                 ) : (
+                   /* Regular price - green */
+                   <Label
+                     text={`${APP_CURRENY.symbol} ${item.vprice} each`}
+                     style={{
+                       fontSize: scale(12),
+                       fontWeight: '400',
+                       color: appColors.gray,
+                     }}
+                   />
+                 )}
                  <Label
                    text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                    style={{

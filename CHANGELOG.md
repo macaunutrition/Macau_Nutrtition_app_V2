@@ -33,6 +33,9 @@ All notable changes to the Macau Nutrition App will be documented in this file.
 - Implemented conditional font sizing for different languages
 - Updated product cart item styling and font sizes
 - Resolved bundle caching issues preventing code changes
+- **Added Google Play 16 KB page size support** - Required for Android 15+ compliance
+- Updated AndroidManifest.xml with `android:extractNativeLibs="false"`
+- Modified build.gradle with NDK configuration and modern packaging options
 
 ### Translation Updates
 - **English**:

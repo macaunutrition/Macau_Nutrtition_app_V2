@@ -142,7 +142,19 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
-        versionName "1.3.0"
+        versionName "1.3.1"
+        
+        // Support for 16 KB page sizes (Google Play requirement for Android 15+)
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+        
+        // Ensure native libraries are not extracted (required for 16 KB page sizes)
+        packagingOptions {
+            jniLibs {
+                useLegacyPackaging = false
+            }
+        }
     }
     splits {
         abi {
@@ -179,6 +191,20 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+    
+    // Configure extractNativeLibs for 16 KB page size support
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.processManifest.doLast {
+                def manifestFile = new File("$buildDir/intermediates/merged_manifests/${variant.name}/AndroidManifest.xml")
+                if (manifestFile.exists()) {
+                    def manifest = new XmlParser().parse(manifestFile)
+                    manifest.application[0].attributes().put('android:extractNativeLibs', 'false')
+                    new XmlNodePrinter(new PrintWriter(new FileWriter(manifestFile))).print(manifest)
+                }
+            }
         }
     }
 

@@ -45,6 +45,12 @@ A comprehensive React Native mobile application for Macau Nutrition, supporting 
 - **Fixed language persistence** - App now properly loads saved language from AsyncStorage on startup
 - **Improved translation loading** - Prevents defaulting to English when Chinese is selected
 
+#### 5. **Google Play 16 KB Page Size Support**
+- **Added 16 KB page size support** - Required for Google Play apps targeting Android 15+
+- **Updated AndroidManifest.xml** - Added `android:extractNativeLibs="false"`
+- **Modified build configuration** - Added NDK configuration and modern packaging options
+- **Compliance ready** - Meets Google Play deadline requirements (Nov 1, 2025)
+
 ## 🛠 Technical Details
 
 ### Build Configuration

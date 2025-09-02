@@ -22,7 +22,7 @@ export default {
  save: "Save",
  additemoncart: "Add item on cart.",
  yourcartisempty: "Your Cart is empty.",
- checkout: "Checkout",
+   checkout: "CHECKOUT",
  phonenumber: "Phone Number",
  fulldeliveryaddress: "Full Delivery Address",
  deliverycomment: "Delivery Comment",
@@ -54,7 +54,7 @@ export default {
  confirmcode: "Confirm Code",
  problem: "Problem with authorization? Contact us!",
  orderhistory: "Order History",
- selectquantity: "Select Quantity",
+ 
  select: "Select",
  max: "Max",
  youcanbuy: "you can buy.",
@@ -93,7 +93,7 @@ export default {
    cart: "Cart",
   home: "Home",
   account: "Account",
-  continueshopping: "Continue Shopping",
+  continueshopping: "CONTINUE SHOPPING",
   selectQuantity: "Select Quantity",
   removeItem: "Remove Item",
   confirmDelete: "Confirm Delete",
@@ -183,5 +183,5 @@ export default {
  mobilenumberisrequired: 'Mobile number is required',
  codesent: 'Code sent to your mobile number',
  waitingforpayment: 'Waiting for payment confirmation. Do not close the app.',
- continueshopping: 'Continue Shopping',
+ 
 };

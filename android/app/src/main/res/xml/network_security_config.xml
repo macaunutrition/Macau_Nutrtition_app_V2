@@ -5,6 +5,7 @@
         <domain includeSubdomains="true">24.199.118.232</domain>
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">macaupay.com</domain>
         <domain includeSubdomains="true">uatopenapi.macaupay.com.mo</domain>
         <domain includeSubdomains="true">openapi.macaupay.com.mo</domain>

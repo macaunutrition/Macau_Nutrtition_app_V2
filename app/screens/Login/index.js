@@ -278,7 +278,7 @@ function index({getProductsList$,loginUser$, navigation}) {
         {/* Other content */}
         <View style={styles.bottomView}>
           <Text style={{color:appColors.primary,fontSize:15,marginBottom:10}} onPress={() => refRBSheet.current.open()}>語言 Language</Text>
-          <Text style={{fontSize:scale(11)}}>Version 1.3.0</Text>
+          <Text style={{fontSize:scale(11)}}>Version 1.3.1</Text>
         </View>
       </View>
        <RBSheet

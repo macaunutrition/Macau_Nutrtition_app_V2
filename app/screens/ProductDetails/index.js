@@ -1044,7 +1044,7 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
                     
                     {/* Select Quantity and Selector on same horizontal line */}
                     <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
-                      <Label text="Select Quantity" style={{fontSize: scale(15)}} />
+                      <Label text={t('selectQuantity')} style={{fontSize: scale(15)}} />
                       
                       {/* Quantity Selector - 50% bigger with same horizontal padding as buttons */}
                       <TouchableOpacity
@@ -1208,7 +1208,7 @@ function index({wishList:{wishItemNames}, cart:{ cartItems },addToWishList$,addT
                         
                         {/* Select Quantity and Selector on same horizontal line */}
                         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
-                          <Label text="Select Quantity" style={{fontSize: scale(15)}} />
+                          <Label text={t('selectQuantity')} style={{fontSize: scale(15)}} />
                           
                           {/* Quantity Selector - 50% bigger with same horizontal padding as buttons */}
                           <TouchableOpacity

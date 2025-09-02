@@ -183,7 +183,7 @@ const listRef = useRef(null);
         {/* Price and Items Info */}
         <View style={{marginBottom: scale(2)}}>
           <Label
-            text="TOTAL"
+            text={t('subtotal')}
             style={{
               fontSize: scale(14),
               opacity: scale(0.4),
@@ -228,14 +228,13 @@ const listRef = useRef(null);
               paddingHorizontal: scale(8),
               marginRight: scale(10), // 10px space between buttons
             }}
-            labelStyle={{
-              color: appColors.black,
-              fontSize: scale(12),
-              fontWeight: '300',
-              textAlign: 'center',
-            }}
             onPress={handleContinueShopping} 
-            label="CONTINUE SHOPPING"
+            label={t('continueshopping')}
+            labelStyle={{ 
+              color: appColors.black, 
+              letterSpacing: scale(2), 
+              fontSize: i18n.language === 'cn' ? scale(16) : scale(12) 
+            }}
           />
           
           {/* Checkout Button */}
@@ -249,6 +248,7 @@ const listRef = useRef(null);
             }} 
             onPress={()=> CheckEmptyCart()} 
             label={t('checkout')} 
+            labelStyle={{ letterSpacing: scale(2) }}
           />
         </View>
       </View>

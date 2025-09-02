@@ -11,6 +11,9 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '13.4'
 install! 'cocoapods',
   :deterministic_uuids => false
 
+
+  project 'macaunutrition.xcodeproj'
+
 prepare_react_native_project!
 
 
@@ -63,6 +66,18 @@ target 'macaunutrition' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
+
+    # Fix for BoringSSL-GRPC compilation error with newer Xcode versions
+    installer.pods_project.targets.each do |target|
+      if target.name == 'BoringSSL-GRPC'
+        target.build_configurations.each do |config|
+          config.build_settings['OTHER_CFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_CFLAGS'] << '-Wno-error=unused-command-line-argument'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-error=unused-command-line-argument'
+        end
+      end
+    end
 
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.

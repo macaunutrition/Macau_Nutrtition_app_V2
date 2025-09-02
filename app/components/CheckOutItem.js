@@ -314,8 +314,8 @@ const truncateText = (text,limit) => {
         }}>
         <>
         {i18n.language == 'en' ? (
-          <Label text={truncateText(item.name,18)} style={{fontWeight: '600' ,}} />) : (
-            <Label text={truncateText(item.cname,18)} style={{fontWeight: '600' ,}} /> )}
+          <Label text={truncateText(item.name,18)} style={{fontWeight: '600', fontSize: scale(15)}} />) : (
+            <Label text={truncateText(item.cname,18)} style={{fontWeight: '600', fontSize: scale(15)}} /> )}
         </>
 
         { !item.variationname  && (
@@ -356,7 +356,7 @@ const truncateText = (text,limit) => {
               />
             )}
             <Label
-              text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
+              text={`${t('subtotal')}: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
               style={{
                 fontSize: scale(14), // Increased from 12 to 14 for better readability
                 fontWeight: '600',
@@ -407,7 +407,7 @@ const truncateText = (text,limit) => {
                        />
                      )}
                      <Label
-                       text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
+                       text={`${t('subtotal')}: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                        style={{
                          fontSize: scale(12), // Reduced from 16 to 12 for more compact layout
                          fontWeight: '600',
@@ -453,7 +453,7 @@ const truncateText = (text,limit) => {
                        />
                      )}
                      <Label
-                       text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
+                       text={`${t('subtotal')}: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                        style={{
                          fontSize: scale(14), // Increased from 12 to 14 for better readability
                          fontWeight: '600',
@@ -501,7 +501,7 @@ const truncateText = (text,limit) => {
                    />
                  )}
                  <Label
-                   text={`Total: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
+                   text={`${t('subtotal')}: ${APP_CURRENY.symbol} ${calculateTotalPrice()}`}
                    style={{
                      fontSize: scale(14), // Increased from 12 to 14 for better readability
                      fontWeight: '600',

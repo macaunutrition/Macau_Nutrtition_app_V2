@@ -34,7 +34,7 @@ export default function index({
           unFilled ? styles.unFilledLabel : {},
           labelStyle,
         ]}>
-        {`${label}`.toUpperCase()}
+        {`${label}`}
       </Text> :
       <ActivityIndicator size={"large"} color={appColors.white} />
 
@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
     fontSize: scale(16),
     fontWeight: '300',
     color: appColors.white,
-    letterSpacing: scale(2),
   },
   unFilled: {
     backgroundColor: 'transparent',

@@ -52,7 +52,7 @@ export default {
   code: "代碼",
   confirmcode: "確認代碼",
   problem: "登入不成功？聯繫我們！",
-  selectquantity: "選擇數量",
+
   select: "選擇",
   max: "最大",
   youcanbuy: "你可以購買。",
@@ -103,7 +103,7 @@ export default {
   inStock: "庫存",
   payfail: '支付失敗。再試一次',
   techissue: '技術錯誤。再試一次。',
-  opps: '哎呀！出了些問題 ！',
+  opps: '哎呀！出了些問題！',
   id: 'ID',
   transaction: '交易',
   reference: '參考',
@@ -122,7 +122,7 @@ export default {
   free: '免運費',
   wishlist: '願望清單',
   afterpointused: '使用點後',
-  items: '專案',
+  items: '件數',
   storagepermission: '保存 PDF 需要儲存權限',
   pdfgenerated: 'PDF 生成',
   pdferror: '產生 PDF 失敗',
@@ -181,5 +181,5 @@ export default {
   mobilenumberisrequired: '需要手機號碼！',
   codesent: '代碼已發送至您的手機號碼',
   waitingforpayment: '等待付款確認。請勿關閉應用程式。',
-  continueshopping: '繼續購物',
+
 };

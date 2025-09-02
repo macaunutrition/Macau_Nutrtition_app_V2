@@ -17,6 +17,8 @@ import {AlertHelper} from '../utils/AlertHelper';
 import moment from 'moment';
 import { firebase } from '@react-native-firebase/analytics';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import OptimizedImage from './OptimizedImage';
+import { ImagePriority, CacheStrategy } from '../utils/ImageOptimizer';
 
 const placeholder = require('../static/images/default-placeholder.png');
 
@@ -115,11 +117,15 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
           console.log('ProductCard: Full item data:', item);
           navigation.navigate('ProductDetails',{pid: id});
         }} >
-          <FastImage
+          <OptimizedImage
             style={{ height: height, width: '100%', position: 'relative', zIndex: 1 }}
             source={imgSource}
             resizeMode={FastImage.resizeMode.contain}
             onLoad={onImageLoad}
+            priority={ImagePriority.IMPORTANT}
+            cacheStrategy={CacheStrategy.IMMUTABLE}
+            lazyLoad={true}
+            showLoader={true}
           />
         </Pressable>
         {sellprice > 0 && (
@@ -140,6 +146,9 @@ export default function ProductCard({ cartItems, navigation, item, onImageLoad =
                  autoPlay
                  loop={true}
                  style={{width: 150, height: 150,marginTop:-10}}
+                 renderMode="HARDWARE"
+                 cacheComposition={true}
+                 speed={0.8}
                />
              </View>
          )}

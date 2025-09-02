@@ -37,6 +37,9 @@ const placeholder = require('../../static/images/default-placeholder.png');
 import { firebase } from '@react-native-firebase/analytics';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import LottieView from 'lottie-react-native';
+import OptimizedImage from '../../components/OptimizedImage';
+import { ImageOptimizer, ImagePriority, CacheStrategy } from '../../utils/ImageOptimizer';
+import { PerformanceOptimizer } from '../../utils/PerformanceOptimizer';
 
 
 
@@ -220,33 +223,44 @@ function Home({cart:{ cartItems },navigation}) {
   }
   const nativeAdViewRef = useRef();
   useEffect( () => {
+    // Initialize performance optimizer
+    PerformanceOptimizer.initialize();
+    PerformanceOptimizer.startScreenLoad('Home');
+    
     setTimeout(() => {
       setInitialLoading(false);
       setLoading(false);
+      PerformanceOptimizer.endScreenLoad('Home');
     }, 1000);
+    
     async function fetchData() {
       setLoading(true);
       setInitialLoading(true);
       firebase.analytics().setCurrentScreen('Home');
-      const value = await AsyncStorage.getItem('user');
-      const getU = await getData('users',value );
-         if(getU.data()) {
-          if(getU.data()['country']) {
-          }else {
-           navigation.navigate('SignUp');
-          }
-         }else {
-           navigation.navigate('SignUp');
-         }
       
-      // Show Lottie animation for at least 2 seconds
-     
+      // Use performance optimizer for heavy operations
+      await PerformanceOptimizer.deferHeavyOperation(async () => {
+        const value = await AsyncStorage.getItem('user');
+        const getU = await getData('users',value );
+           if(getU.data()) {
+            if(getU.data()['country']) {
+            }else {
+             navigation.navigate('SignUp');
+            }
+           }else {
+             navigation.navigate('SignUp');
+           }
+      });
     }
+    
     fetchData();
-      //console.log(value);
-    getProductsList();
-    getBestseller();
-    getPopular();
+    
+    // Batch data fetching for better performance
+    PerformanceOptimizer.batchOperations([
+      () => getProductsList(),
+      () => getBestseller(),
+      () => getPopular()
+    ]);
   }, []);
 
   const RenderTitle = ({heading, rightLabel}) => {

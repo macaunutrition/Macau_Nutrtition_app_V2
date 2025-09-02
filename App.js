@@ -29,6 +29,7 @@ import { registerNotificationListeners, setNavigator } from './app/services/Noti
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import Splashscreen from './app/screens/Splashscreen';
+import Welcome from './app/screens/Welcome';
 
 
 
@@ -53,6 +54,38 @@ const App: () => React$Node = () => {
   const [isGuest, setIsGuest] = useState('0');
   const [isLoadingpage, setIsLoadingpage] = useState(true);
   const [user, setUser] = useState();
+  const [showIntro, setShowIntro] = useState(false);
+  const [showPostIntroSplash, setShowPostIntroSplash] = useState(false);
+  
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+    setShowPostIntroSplash(true);
+    
+    // Preload critical app data during splash screen
+    preloadAppData();
+    
+    // Show splash screen for 3 seconds after intro completion
+    setTimeout(() => {
+      setShowPostIntroSplash(false);
+    }, 3000);
+  };
+  
+  const preloadAppData = async () => {
+    try {
+      // Preload critical data here
+      console.log('Preloading app data...');
+      
+      // You can add preloading logic here like:
+      // - Preload critical images
+      // - Initialize Firebase connections
+      // - Load user preferences
+      // - Cache frequently used data
+      
+    } catch (error) {
+      console.log('Preload error:', error);
+    }
+  };
+  
   const getUser = async (mobile) => {
     const getU = await getData('users', mobile);
     if (getU._data?.language == '中文') {
@@ -127,6 +160,25 @@ const App: () => React$Node = () => {
      setIsLoadingpage(true);
      setNavigator(navigationRef.current);
      let userDocUnsubscribe = null;
+     let splashScreenTimer = null;
+     
+     // Show splash screen for minimum 2 seconds
+     const showSplashScreen = async () => {
+       await new Promise(resolve => setTimeout(resolve, 2000));
+       setIsLoadingpage(false);
+     };
+     
+     splashScreenTimer = showSplashScreen();
+     
+     // Check if intro should be shown
+     const checkIntro = async () => {
+       const introShown = await AsyncStorage.getItem('isIntro');
+       if (!introShown || introShown !== 'yes') {
+         setShowIntro(true);
+       }
+     };
+     
+     checkIntro();
      auth().onAuthStateChanged( async (user) => {
         try {
          if (user) {
@@ -139,14 +191,11 @@ const App: () => React$Node = () => {
            if(getU.data()) {
              if(getU.data()['country']) {
                setIsGuest('2');
-               setIsLoadingpage(false);
              }else {
                setIsGuest('2');
-               setIsLoadingpage(false);
              }
            }else {
              setIsGuest('2');
-             setIsLoadingpage(false);
            }
            checkApplicationPermission();
             const fcmToken = await requestFCMPermission();
@@ -177,16 +226,15 @@ const App: () => React$Node = () => {
          } else {
            await AsyncStorage.removeItem('user');
            setIsGuest('0');
-           setIsLoadingpage(false);
            if (userDocUnsubscribe) {
              userDocUnsubscribe();
              userDocUnsubscribe = null;
            }
          }
         } catch (error) {
-          setIsLoadingpage(false);
+          // Error handling - splash screen will still show for minimum time
         } finally {
-          setIsLoadingpage(false);
+          // Splash screen timer will handle setIsLoadingpage(false)
         }
      });
      registerNotificationListeners();
@@ -198,6 +246,9 @@ const App: () => React$Node = () => {
        if (userDocUnsubscribe) {
          userDocUnsubscribe();
          userDocUnsubscribe = null;
+       }
+       if (splashScreenTimer) {
+         splashScreenTimer = null;
        }
        unsubscribe && unsubscribe();
      };
@@ -249,6 +300,28 @@ const App: () => React$Node = () => {
         <PersistGate loading={null} persistor={persistor}>
           {/* navigationTypeTabs ? <TabNavigationStack/> : <MainStack /> */}
           {isLoadingpage ? (
+            <>
+              <NavigationContainer>
+                <Stack.Navigator initialRouteName="Splashscreen" screenOptions={{
+                  headerShown: false,
+                }}>
+                  <Stack.Screen name="Splashscreen" component={Splashscreen} />
+                </Stack.Navigator>
+              </NavigationContainer>
+            </>
+          ) : showIntro ? (
+            <>
+              <NavigationContainer>
+                <Stack.Navigator initialRouteName="Welcome" screenOptions={{
+                  headerShown: false,
+                }}>
+                  <Stack.Screen name="Welcome">
+                    {(props) => <Welcome {...props} onIntroComplete={handleIntroComplete} />}
+                  </Stack.Screen>
+                </Stack.Navigator>
+              </NavigationContainer>
+            </>
+          ) : showPostIntroSplash ? (
             <>
               <NavigationContainer>
                 <Stack.Navigator initialRouteName="Splashscreen" screenOptions={{

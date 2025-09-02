@@ -194,19 +194,7 @@ android {
         }
     }
     
-    // Configure extractNativeLibs for 16 KB page size support
-    android.applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            output.processManifest.doLast {
-                def manifestFile = new File("$buildDir/intermediates/merged_manifests/${variant.name}/AndroidManifest.xml")
-                if (manifestFile.exists()) {
-                    def manifest = new XmlParser().parse(manifestFile)
-                    manifest.application[0].attributes().put('android:extractNativeLibs', 'false')
-                    new XmlNodePrinter(new PrintWriter(new FileWriter(manifestFile))).print(manifest)
-                }
-            }
-        }
-    }
+
 
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->

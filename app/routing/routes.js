@@ -38,6 +38,7 @@ import PrivacyPolicy from '../screens/privacypolicy';
 import Login from '../screens/Login';
 import SignUp from '../screens/SignUp';
 import Verification from '../screens/Verification';
+import Welcome from '../screens/Welcome';
 
 // Tab routes - only the main tabs
 export const TabRoutes = [
@@ -211,6 +212,10 @@ export const StackRoutes = [
   {
     name: 'Privacy',
     component: PrivacyPolicy,
+  },
+  {
+    name: 'Welcome',
+    component: Welcome,
   },
 ];
 

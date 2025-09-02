@@ -7,8 +7,9 @@ import Feather from 'react-native-vector-icons/Feather';
 import {appColors, shadow} from '../../utils/appColors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from "react-i18next";
+import OptimizedLottie from '../../components/OptimizedLottie';
 import "../../translation";
-function Index({loginUser$,navigation}) {
+function Index({loginUser$, navigation, onIntroComplete}) {
   const { t, i18n } = useTranslation();
   const slides = [
     {
@@ -16,34 +17,51 @@ function Index({loginUser$,navigation}) {
       title: `${t('macauneutrition')}`,
       text: `${t('intro1')}`,
       image: require('../../static/images/intro/in1.jpeg'),
-      backgroundColor: '#59b2ab',
+      backgroundColor: '#ffffff',
     },
     {
       key: 2,
       title: `${t('macauneutrition')}`,
       text: `${t('intro2')}`,
-    image: require('../../static/images/intro/in2.jpeg'),
-      backgroundColor: '#febe29',
+      lottie: require('../../static/delivery_motorbike.json'),
+      backgroundColor: '#ffffff',
     },
     {
       key: 3,
       title: `${t('macauneutrition')}`,
       text: `${t('intro3')}`,
-      image: require('../../static/images/intro/in3.jpeg'),
-      backgroundColor: '#22bcb5',
+      lottie: require('../../static/coupon_discount.json'),
+      backgroundColor: '#ffffff',
     }
   ];
-   _renderItem = ({ item }) => {
+  const _renderItem = ({ item }) => {
       return (
         <View style={styles.mainbox}>
-          <View style={styles.inerbox}>
-            <Image style={styles.image} source={item.image} />
+          <View style={styles.imageContainer}>
+            {item.lottie ? (
+              <OptimizedLottie
+                source={item.lottie}
+                autoPlay
+                loop={true}
+                style={styles.lottieAnimation}
+                pauseOnBackground={false}
+              />
+            ) : (
+              <Image style={styles.logoImage} source={item.image} />
+            )}
           </View>
-          <Text style={styles.decrip}>{item.text}</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.centeredText}>
+              {item.key === 2 ? 'SAME DAY DELIVERY' : 
+               item.key === 3 ? 'MEMBERS DISCOUNT & PROMOTIONS' : 
+               'WORLD TOP SUPPLEMENTS BRANDS'}
+            </Text>
+          </View>
         </View>
       );
     }
-    _renderNextButton = () => {
+    
+  const _renderNextButton = () => {
       return (
         <View style={styles.buttonCircle}>
           <Feather
@@ -54,7 +72,8 @@ function Index({loginUser$,navigation}) {
         </View>
       );
     };
-    _renderDoneButton = () => {
+    
+  const _renderDoneButton = () => {
       return (
         <View style={styles.buttonCircle}>
           <Feather
@@ -65,29 +84,37 @@ function Index({loginUser$,navigation}) {
         </View>
       );
     };
-    _onDone = async () => {
+    
+  const _onDone = async () => {
       await AsyncStorage.setItem('isIntro', 'yes');
-      navigation.navigate('Login');
-    }
-    loadData = async () => {
-      const intro = await AsyncStorage.getItem('isIntro');
-      if(intro == 'yes') {
-        navigation.navigate('Login');
+      // Call the callback to hide intro and show main app
+      if (onIntroComplete) {
+        onIntroComplete();
       }
     }
+    
+  const loadData = async () => {
+      const intro = await AsyncStorage.getItem('isIntro');
+      if(intro == 'yes') {
+        // If intro was already shown, call callback to show main app
+        if (onIntroComplete) {
+          onIntroComplete();
+        }
+      }
+    }
+    
     useEffect( () => {
      loadData()
    }, []);
     return (
         <AppIntroSlider
-          dotStyle={{backgroundColor:'#fff'}}
+          dotStyle={{backgroundColor:'#CCCCCC'}}
           activeDotStyle={{backgroundColor:appColors.primary}}
-          renderItem={this._renderItem}
+          renderItem={_renderItem}
           data={slides}
-          renderDoneButton={this._renderDoneButton}
-          renderNextButton={this._renderNextButton}
-          onDone={this._onDone}
-
+          renderDoneButton={_renderDoneButton}
+          renderNextButton={_renderNextButton}
+          onDone={_onDone}
           />
     )
 }
@@ -96,9 +123,11 @@ export default ReduxWrapper(Index)
 
 const styles = StyleSheet.create({
   mainbox:{
-    backgroundColor:'#000',
+    backgroundColor:'#ffffff',
     height:'100%',
     width:'100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   inerbox: {
     alignItems:'center',
@@ -123,5 +152,37 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     paddingHorizontal:30,
     marginTop:50
+  },
+  centeredText: {
+    color: '#000000',
+    fontSize: 26,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingHorizontal: 30,
+  },
+  imageContainer: {
+    height: '70%',
+    width: '100%',
+    marginTop: 150,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textContainer: {
+    height: '30%',
+    width: '100%',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginBottom: 50,
+    paddingTop: 20,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
+  lottieAnimation: {
+    width: '100%', // Full width to match image container
+    height: '100%', // Full height to match image container
   }
 });

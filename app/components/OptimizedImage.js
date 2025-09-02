@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Animated } from 'react-native';
+import { View, Animated, Dimensions } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { scale } from 'react-native-size-matters';
 import { appColors } from '../utils/appColors';
+import { ImageOptimizer, ImagePerformanceMonitor, ImagePriority, CacheStrategy } from '../utils/ImageOptimizer';
 
 const placeholder = require('../static/images/default-placeholder.png');
 
-// Optimized Image Component with Memory Management
+// Enhanced Optimized Image Component with Advanced Performance Features
 const OptimizedImage = ({
   source,
   style,
@@ -15,26 +16,39 @@ const OptimizedImage = ({
   onError = () => {},
   showLoader = true,
   fallbackSource = placeholder,
+  priority = ImagePriority.IMPORTANT,
+  cacheStrategy = CacheStrategy.IMMUTABLE,
+  enablePerformanceMonitoring = true,
+  lazyLoad = false,
   ...props
 }) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!lazyLoad);
   const [error, setError] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [isVisible, setIsVisible] = useState(!lazyLoad);
+  const fadeAnim = useRef(new Animated.Value(lazyLoad ? 0 : 1)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const imageRef = useRef(null);
+
+  // Performance monitoring
+  useEffect(() => {
+    if (enablePerformanceMonitoring && source?.uri) {
+      ImagePerformanceMonitor.startLoad(source.uri);
+    }
+  }, [source, enablePerformanceMonitoring]);
 
   // Shimmer animation for loading state
   useEffect(() => {
-    if (loading) {
+    if (loading && showLoader) {
       const shimmer = Animated.loop(
         Animated.sequence([
           Animated.timing(shimmerAnim, {
             toValue: 1,
-            duration: 1000,
+            duration: 1200,
             useNativeDriver: true,
           }),
           Animated.timing(shimmerAnim, {
             toValue: 0,
-            duration: 1000,
+            duration: 1200,
             useNativeDriver: true,
           }),
         ])
@@ -42,67 +56,103 @@ const OptimizedImage = ({
       shimmer.start();
       return () => shimmer.stop();
     }
-  }, [loading, shimmerAnim]);
+  }, [loading, shimmerAnim, showLoader]);
+
+  // Intersection observer for lazy loading
+  useEffect(() => {
+    if (lazyLoad) {
+      // Simple intersection observer simulation
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+        setLoading(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [lazyLoad]);
 
   const handleLoad = useCallback(() => {
     setLoading(false);
     setError(false);
     
-    // Fade in animation
+    // Performance monitoring
+    if (enablePerformanceMonitoring && source?.uri) {
+      ImagePerformanceMonitor.endLoad(source.uri, true);
+    }
+    
+    // Smooth fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 300,
+      duration: 400,
       useNativeDriver: true,
     }).start();
     
     onLoad();
-  }, [fadeAnim, onLoad]);
+  }, [fadeAnim, onLoad, source, enablePerformanceMonitoring]);
 
   const handleError = useCallback((err) => {
     setLoading(false);
     setError(true);
+    
+    // Performance monitoring
+    if (enablePerformanceMonitoring && source?.uri) {
+      ImagePerformanceMonitor.endLoad(source.uri, false);
+    }
+    
     onError(err);
-  }, [onError]);
+  }, [onError, source, enablePerformanceMonitoring]);
 
-  // Optimized FastImage configuration
+  // Optimized image source with fallback
   const imageSource = error ? fallbackSource : source;
   
+  // Get optimized dimensions
+  const optimizedStyle = style ? {
+    ...style,
+    // Ensure minimum dimensions for better performance
+    minWidth: style.width || 50,
+    minHeight: style.height || 50,
+  } : {};
+
+  if (!isVisible) {
+    return <View style={optimizedStyle} />;
+  }
+  
   return (
-    <View style={[style, { position: 'relative' }]}>
-      {/* Loading shimmer */}
+    <View style={[optimizedStyle, { position: 'relative' }]}>
+      {/* Enhanced loading shimmer */}
       {loading && showLoader && (
         <Animated.View
           style={[
-            style,
+            optimizedStyle,
             {
               position: 'absolute',
               backgroundColor: appColors.lightGray,
               opacity: shimmerAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0.3, 0.7],
+                outputRange: [0.2, 0.6],
               }),
               zIndex: 2,
+              borderRadius: style?.borderRadius || 0,
             },
           ]}
         />
       )}
       
-      {/* Optimized FastImage */}
-      <Animated.View style={{ opacity: loading ? 0 : fadeAnim }}>
+      {/* Optimized FastImage with enhanced configuration */}
+      <Animated.View style={{ opacity: fadeAnim }}>
         <FastImage
+          ref={imageRef}
           {...props}
           source={imageSource}
-          style={style}
+          style={optimizedStyle}
           resizeMode={resizeMode}
           onLoad={handleLoad}
           onError={handleError}
-          // Optimized cache configuration
-          priority={FastImage.priority.normal}
-          cache={FastImage.cacheControl.immutable}
+          // Enhanced cache configuration
+          priority={priority}
+          cache={cacheStrategy}
           // Memory optimization
           onMemoryWarning={() => {
-            // Handle memory warnings by reducing cache
-            FastImage.clearDiskCache();
+            ImageOptimizer.handleMemoryWarning();
           }}
         />
       </Animated.View>

@@ -14,7 +14,7 @@ const SplashScreen = ({ navigation }) => {
         source={require('../../static/bikelotti.json')}
         autoPlay
         loop={true}
-        style={{width: 320, height: 320}}
+        style={{width: 160, height: 160}}
         pauseOnBackground={false}
       />
     </View>

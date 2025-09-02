@@ -141,8 +141,8 @@ android {
         applicationId "com.macauntrition.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "1.3.1"
+        versionCode 4
+        versionName "1.3.3"
         
         // Support for 16 KB page sizes (Google Play requirement for Android 15+)
         ndk {

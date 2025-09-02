@@ -182,11 +182,38 @@ function index({route:{params}, navigation}) {
     setIspayloading(false);
     const {error, data, transationid, mpaytid, mpaytno} = info;
     if (!error) {
-      await saveOrder(transationid,mpaytid,mpaytno);
-      await UpdateQty();
-      dispatch(clearCart());
-      AlertHelper.show('success', t('orderplacesucc'));
-      navigation.navigate('Orders');
+      // Navigate to payment loading screen first
+      navigation.navigate('PaymentLoading', {
+        paymentData: {
+          transationid,
+          mpaytid,
+          mpaytno,
+          amount: parseFloat(parseFloat(dynamicprice)+parseFloat(shippingamount)).toFixed(2),
+          currency: APP_CURRENY.currency
+        },
+        onPaymentComplete: async () => {
+          // This callback will be called after payment processing is complete
+          try {
+            await saveOrder(transationid, mpaytid, mpaytno);
+            await UpdateQty();
+            dispatch(clearCart());
+            
+            // Navigate to success screen with order details
+            navigation.navigate('PaymentSuccess', {
+              orderId: transationid,
+              orderData: {
+                amount: parseFloat(parseFloat(dynamicprice)+parseFloat(shippingamount)).toFixed(2),
+                currency: APP_CURRENY.currency,
+                items: cartItems.length
+              }
+            });
+          } catch (error) {
+            console.error('Error processing payment completion:', error);
+            AlertHelper.show('error', t('orderprocessingerror') || 'Error processing order');
+            navigation.goBack(); // Go back to summary screen
+          }
+        }
+      });
     } else {
       AlertHelper.show('error', data);
     }

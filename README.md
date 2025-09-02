@@ -1,9 +1,9 @@
-# 🏥 Macau Nutrition App - Version 1.3.1
+# 🏥 Macau Nutrition App - Version 1.3.3
 
 ## 📱 Overview
-A comprehensive nutrition and supplement shopping app for Macau, featuring bilingual support (English/Chinese), advanced performance optimizations, and a complete intro system with Lottie animations.
+A comprehensive nutrition and supplement shopping app for Macau, featuring bilingual support (English/Chinese), advanced performance optimizations, complete intro system with Lottie animations, and enhanced payment flow with loading screens.
 
-## 🚀 Version 1.3.1 - Latest Updates
+## 🚀 Version 1.3.3 - Latest Updates
 
 ### ✨ **New Features & Improvements**
 
@@ -17,6 +17,12 @@ A comprehensive nutrition and supplement shopping app for Macau, featuring bilin
 1. **Slide 1**: "WORLD TOP SUPPLEMENTS BRANDS" with logo image
 2. **Slide 2**: "SAME DAY DELIVERY" with delivery motorbike Lottie animation
 3. **Slide 3**: "MEMBERS DISCOUNT & PROMOTIONS" with coupon discount Lottie animation
+
+#### 💳 **Enhanced Payment Flow System**
+- **Payment Loading Screen**: Step-by-step progress with Lottie animations
+- **Payment Success Screen**: Success confirmation with order details
+- **Device-Compatible Lottie**: Platform-optimized animation rendering
+- **Improved UX**: Better user feedback during payment processing
 
 #### ⚡ **Advanced Performance Optimizations**
 - **Enhanced Image Loading**: Smart caching, lazy loading, and priority-based loading

@@ -39,6 +39,8 @@ import Login from '../screens/Login';
 import SignUp from '../screens/SignUp';
 import Verification from '../screens/Verification';
 import Welcome from '../screens/Welcome';
+import PaymentLoading from '../screens/PaymentLoading';
+import PaymentSuccess from '../screens/PaymentSuccess';
 
 // Tab routes - only the main tabs
 export const TabRoutes = [
@@ -216,6 +218,14 @@ export const StackRoutes = [
   {
     name: 'Welcome',
     component: Welcome,
+  },
+  {
+    name: 'PaymentLoading',
+    component: PaymentLoading,
+  },
+  {
+    name: 'PaymentSuccess',
+    component: PaymentSuccess,
   },
 ];
 
